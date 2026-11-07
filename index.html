@@ -1,0 +1,502 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>ProductHub Victoria</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="A small room for the people who make software products on Vancouver Island. Small gatherings where peers show how they really build, test and ship.">
+<meta property="og:title" content="ProductHub Victoria">
+<meta property="og:description" content="A small room for the people who make software products on Vancouver Island.">
+<meta property="og:image" content="assets/og-image.png">
+<meta name="twitter:card" content="summary_large_image">
+<!--HEAD-ASSETS-->
+<link rel="icon" href="favicon.ico" sizes="48x48">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="site.webmanifest">
+<meta name="theme-color" content="#06111F">
+<!--/HEAD-ASSETS-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Poppins:wght@400;500;600;700&display=swap">
+<style>
+/* Layout: dark, editorial grid. Deep-navy ground with hairline rules, square edges, Poppins set tight
+   for display, a monospace utility face for dates, labels and data. Coral is the one sharp accent.
+   Dark by default, with a light theme; the viewer picks Auto, Light or Dark in the header. */
+:root {
+  --ground: #06111F;          /* deeper than brand navy, for the page */
+  --navy: #0B1F3A;            /* brand navy, raised surfaces */
+  --navy-2: #102A4C;
+  --ink: #EEF3F8;
+  --ink-soft: #A9B6C6;
+  --ink-faint: #6F8098;
+  --line: rgba(191, 245, 236, 0.12);
+  --line-strong: rgba(191, 245, 236, 0.24);
+  --ocean: #1B6CA8;
+  --seaglass: #5FD1C6;
+  --mint: #BFF5EC;
+  --coral: #FF7A59;
+  --gradient: linear-gradient(45deg, var(--ocean), var(--seaglass));
+  --font: "Poppins", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --step--1: 0.8125rem;
+  --step-0: 1rem;
+  --step-1: 1.2rem;
+  --step-2: 1.55rem;
+  --step-3: clamp(2rem, 4.4vw, 3rem);
+  --step-4: clamp(2.6rem, 7vw, 5.2rem);
+  --max: 1200px;
+  --surface: #0B1F3A;
+  --band: #0B1F3A;
+  --accent-text: #5FD1C6;
+  --coral-text: #FF7A59;
+  --on-coral: #06111F;
+  --header-bg: rgba(6, 17, 31, 0.86);
+  --hero-fade: rgba(6, 17, 31, 1);
+  --placeholder: rgba(255, 122, 89, 0.10);
+  --show-on-dark: block;
+  --show-on-light: none;
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) {
+  --ground: #F6F9FA; --navy: #FFFFFF; --navy-2: #EEF4F6; --surface: #FFFFFF; --band: #EBF2F4;
+  --ink: #0B1F3A; --ink-soft: #3F4D63; --ink-faint: #66738A;
+  --line: rgba(11, 31, 58, 0.10); --line-strong: rgba(11, 31, 58, 0.22);
+  --accent-text: #1B6CA8; --coral-text: #C2492B; --header-bg: rgba(246, 249, 250, 0.88); --hero-fade: rgba(246, 249, 250, 1);
+  --placeholder: rgba(255, 122, 89, 0.12); --show-on-dark: none; --show-on-light: block; color-scheme: light; } }
+:root[data-theme="light"] {
+  --ground: #F6F9FA; --navy: #FFFFFF; --navy-2: #EEF4F6; --surface: #FFFFFF; --band: #EBF2F4;
+  --ink: #0B1F3A; --ink-soft: #3F4D63; --ink-faint: #66738A;
+  --line: rgba(11, 31, 58, 0.10); --line-strong: rgba(11, 31, 58, 0.22);
+  --accent-text: #1B6CA8; --coral-text: #C2492B; --header-bg: rgba(246, 249, 250, 0.88); --hero-fade: rgba(246, 249, 250, 1);
+  --placeholder: rgba(255, 122, 89, 0.12); --show-on-dark: none; --show-on-light: block; color-scheme: light; }
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } * { transition: none !important; } }
+body { margin: 0; background: var(--ground); color: var(--ink); font-family: var(--font); font-size: var(--step-0); line-height: 1.65; -webkit-font-smoothing: antialiased; }
+img { max-width: 100%; display: block; }
+a { color: var(--accent-text); text-underline-offset: 3px; }
+a:focus-visible, button:focus-visible, input:focus-visible { outline: 2px solid var(--coral); outline-offset: 3px; }
+h1, h2, h3, h4 { line-height: 1.08; text-wrap: balance; margin: 0; letter-spacing: -0.025em; font-weight: 600; }
+p { margin: 0; }
+::selection { background: var(--coral); color: var(--on-coral); }
+.wrap { max-width: var(--max); margin: 0 auto; padding-left: max(20px, env(safe-area-inset-left, 0px)); padding-right: max(20px, env(safe-area-inset-right, 0px)); }
+.eyebrow { display: inline-flex; align-items: center; gap: 10px; font: 500 var(--step--1)/1 var(--mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-soft); }
+.eyebrow::before { content: ""; width: 8px; height: 8px; background: var(--coral); }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.6em; font: 500 0.95rem/1 var(--font); padding: 1em 1.4em; border-radius: 2px; text-decoration: none; border: 1px solid transparent; cursor: pointer; transition: background .15s ease, color .15s ease, border-color .15s ease; }
+.btn-coral { background: var(--coral); color: var(--on-coral); }
+.btn-coral:hover { background: var(--ink); color: var(--ground); }
+.btn-ghost { border-color: var(--line-strong); color: var(--ink); background: transparent; }
+.btn-ghost:hover { border-color: var(--ink); }
+.btn .arrow { font-family: var(--mono); transition: transform .15s ease; }
+.btn:hover .arrow { transform: translate(2px, -2px); }
+
+/* Header */
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--ground); }
+.site-header { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--header-bg); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }
+.site-header .wrap { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-block: 16px; }
+.logo img { height: 38px; width: auto; }
+.nav { display: flex; align-items: center; gap: 4px 28px; flex-wrap: wrap; justify-content: flex-end; }
+.nav a { color: var(--ink-soft); text-decoration: none; font: 500 var(--step--1)/1 var(--mono); letter-spacing: 0.08em; text-transform: uppercase; }
+.nav a:hover { color: var(--ink); }
+.nav .btn { color: var(--on-coral); padding: 0.85em 1.1em; }
+.nav .btn:hover { color: var(--ground); }
+@media (max-width: 860px) { .nav a:not(.btn) { display: none; } }
+@media (max-width: 480px) { .logo img { height: 30px; } .nav .btn { display: none; } }
+
+/* Logos and theme toggle */
+.logo-on-dark { display: var(--show-on-dark); }
+.logo-on-light { display: var(--show-on-light); }
+.theme { display: inline-flex; border: 1px solid var(--line-strong); }
+.theme button { font: 500 0.72rem/1 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--ink-faint); background: transparent; border: 0; padding: 0.7em 0.75em; cursor: pointer; }
+.theme button + button { border-left: 1px solid var(--line); }
+.theme button:hover { color: var(--ink); }
+.theme button[aria-pressed="true"] { background: var(--ink); color: var(--ground); }
+
+/* Hero */
+.hero { position: relative; border-bottom: 1px solid var(--line); overflow: hidden;
+  background:
+    linear-gradient(to right, var(--line) 1px, transparent 1px) 0 0 / 80px 80px,
+    linear-gradient(to bottom, var(--line) 1px, transparent 1px) 0 0 / 80px 80px,
+    var(--ground); }
+.hero::before { content: ""; position: absolute; inset: 0; background: radial-gradient(70% 90% at 15% 20%, transparent 0%, var(--hero-fade) 75%); pointer-events: none; }
+.hero::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 3px; background: var(--gradient); }
+.hero .wrap { position: relative; z-index: 1; display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: 64px; align-items: center; padding-block: 88px; }
+.hero h1 { font-size: var(--step-4); font-weight: 600; letter-spacing: -0.035em; line-height: 1.02; margin-top: 20px; }
+.hero h1 .hl { color: var(--accent-text); }
+.hero .lede { margin-top: 24px; font-size: var(--step-1); color: var(--ink-soft); max-width: 38ch; line-height: 1.6; }
+.hero .actions { margin-top: 36px; display: flex; flex-wrap: wrap; gap: 12px; }
+@media (max-width: 900px) { .hero .wrap { grid-template-columns: 1fr; padding-block: 56px; gap: 44px; } }
+
+/* Next event panel */
+.next { background: var(--surface); border: 1px solid var(--line-strong); padding: 0; min-width: 0; }
+.next > * { padding-left: 24px; padding-right: 24px; }
+.next .tag { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding-block: 14px; border-bottom: 1px solid var(--line); font: 500 var(--step--1)/1 var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--coral-text); }
+.next .tag::after { content: "● LIVE ON LUMA"; color: var(--ink-faint); letter-spacing: .1em; }
+.next h2 { font-size: var(--step-2); margin-top: 22px; }
+.next .when { margin-top: 8px; color: var(--ink-soft); font-family: var(--mono); font-size: 0.875rem; }
+.agenda { list-style: none; margin: 20px 0 0; padding-top: 0; padding-bottom: 0; display: grid; }
+.agenda li { display: grid; grid-template-columns: 4.2em 1fr; gap: 12px; font-size: 0.95rem; color: var(--ink-soft); padding: 9px 0; border-top: 1px solid var(--line); }
+.agenda time { font-family: var(--mono); font-size: 0.875rem; color: var(--accent-text); font-variant-numeric: tabular-nums; }
+.next .btn { margin: 22px 24px 0; width: calc(100% - 48px); padding-left: 0; padding-right: 0; }
+.next .where { margin-top: 14px; padding-bottom: 20px; font: 400 0.8rem var(--mono); color: var(--ink-faint); text-align: center; letter-spacing: .04em; }
+
+/* Sections */
+section { scroll-margin-top: 80px; }
+.band { padding-block: 96px; border-bottom: 1px solid var(--line); }
+.band.tint { background: var(--band); }
+.section-head { display: grid; gap: 16px; max-width: 52rem; margin-bottom: 48px; }
+.section-head .eyebrow { justify-self: start; }
+.section-head h2 { font-size: var(--step-3); }
+.section-head p { color: var(--ink-soft); font-size: 1.05rem; max-width: 52ch; }
+@media (max-width: 600px) { .band { padding-block: 72px; } }
+
+/* What we do */
+.mission { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr); gap: 64px; align-items: start; }
+.mission .statement { font-size: var(--step-1); line-height: 1.6; color: var(--ink); }
+.mission .statement strong { color: var(--accent-text); font-weight: 500; }
+.mission .promise { margin-top: 36px; padding: 24px 0 0; border-top: 1px solid var(--line-strong); color: var(--ink-soft); }
+.mission .promise span { display: block; font: 500 var(--step--1)/1 var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--coral-text); margin-bottom: 12px; }
+.values { list-style: none; margin: 0; padding: 0; display: grid; border-top: 1px solid var(--line-strong); }
+.values li { padding: 22px 0; border-bottom: 1px solid var(--line); display: grid; gap: 6px; }
+.values li:first-child { padding-top: 18px; }
+.values h3 { font-size: var(--step-1); font-weight: 500; letter-spacing: -0.015em; }
+.values p { color: var(--ink-soft); }
+.values .not { font: 400 0.8rem/1.5 var(--mono); color: var(--ink-faint); letter-spacing: .02em; }
+.values .not b { color: var(--coral-text); font-weight: 500; text-transform: uppercase; letter-spacing: .1em; margin-right: 6px; }
+@media (max-width: 900px) { .mission { grid-template-columns: 1fr; gap: 44px; } }
+
+/* Events */
+.events-grid { display: grid; border-top: 1px solid var(--line-strong); }
+.subhead { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin: 0 0 16px; }
+.subhead h3 { font: 500 var(--step--1)/1 var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-soft); }
+.subhead a { font: 500 var(--step--1)/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; text-decoration: none; }
+.events-block + .events-block { margin-top: 56px; }
+.event { display: grid; grid-template-columns: 120px minmax(0, 1fr) auto; gap: 32px; align-items: center; padding: 28px 0; border-bottom: 1px solid var(--line); transition: background .15s ease; }
+.event .date { font-family: var(--mono); line-height: 1.15; display: grid; gap: 2px; }
+.event .date .m { font-size: 0.8rem; letter-spacing: .14em; text-transform: uppercase; color: var(--coral-text); }
+.event .date .d { font-size: 2.6rem; font-weight: 500; letter-spacing: -0.04em; color: var(--ink); font-variant-numeric: tabular-nums; }
+.event .date .y { font-size: 0.8rem; color: var(--ink-faint); }
+.event.past .date .m { color: var(--ink-faint); }
+.event.past .date .d { color: var(--ink-soft); }
+.event .body { min-width: 0; display: grid; gap: 6px; }
+.event h4 { font-size: 1.35rem; font-weight: 500; line-height: 1.25; }
+.event .meta { font: 400 0.82rem/1.5 var(--mono); color: var(--ink-faint); letter-spacing: .02em; }
+.event .summary { color: var(--ink-soft); max-width: 62ch; }
+.event .btn { white-space: nowrap; }
+.empty { padding: 28px 0; border-bottom: 1px solid var(--line); color: var(--ink-soft); }
+.empty strong { color: var(--ink); font-weight: 500; }
+@media (max-width: 760px) {
+  .event { grid-template-columns: 1fr; gap: 14px; padding: 24px 0; }
+  .event .date { grid-auto-flow: column; justify-content: start; align-items: baseline; gap: 10px; }
+  .event .date .d { font-size: 1.8rem; }
+  .event .btn { justify-self: start; }
+}
+
+/* Founders */
+.founders { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); border-top: 1px solid var(--line-strong); border-left: 1px solid var(--line); }
+.founder { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 24px; align-items: start; padding: 32px; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.avatar { width: 96px; height: 96px; border: 1px solid var(--line-strong); background: var(--surface); display: grid; place-items: center; color: var(--accent-text); font: 500 1.4rem var(--mono); letter-spacing: .06em; overflow: hidden; position: relative; }
+.avatar::after { content: ""; position: absolute; left: 0; bottom: 0; width: 100%; height: 3px; background: var(--gradient); }
+.avatar img { width: 100%; height: 100%; object-fit: cover; filter: grayscale(1) contrast(1.05); }
+.founder h3 { font-size: var(--step-2); }
+.founder .role { font: 500 var(--step--1)/1.4 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--coral-text); margin-top: 8px; }
+.founder .bio { margin-top: 14px; color: var(--ink-soft); }
+.founder .links { margin-top: 16px; display: flex; gap: 18px; flex-wrap: wrap; font: 500 var(--step--1)/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; }
+.placeholder { background: var(--placeholder); box-shadow: 0 0 0 4px var(--placeholder); border-radius: 1px; }
+@media (max-width: 900px) { .founders { grid-template-columns: 1fr; } }
+@media (max-width: 480px) { .founder { grid-template-columns: 1fr; padding: 24px; } .avatar { width: 72px; height: 72px; font-size: 1.1rem; } }
+
+/* Newsletter */
+.newsletter { background: var(--ground); position: relative; }
+.newsletter::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 3px; background: var(--gradient); }
+.newsletter .wrap { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 64px; align-items: center; padding-block: 96px; }
+.newsletter h2 { font-size: var(--step-3); margin-top: 16px; }
+.newsletter .wrap > div > p { color: var(--ink-soft); margin-top: 16px; max-width: 42ch; }
+.signup { display: grid; gap: 12px; }
+.signup label { font: 500 var(--step--1)/1 var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-soft); }
+.signup .row { display: flex; gap: 0; flex-wrap: wrap; border: 1px solid var(--line-strong); background: var(--surface); }
+.signup .row:focus-within { border-color: var(--accent-text); }
+.signup input[type=email] { flex: 1 1 220px; min-width: 0; font: 400 1rem var(--font); padding: 1.05em 1.1em; border: 0; border-radius: 0; background: transparent; color: var(--ink); }
+.signup input[type=email]::placeholder { color: var(--ink-faint); }
+.signup input[type=email]:focus { outline: none; }
+.signup .row .btn { border-radius: 0; }
+.signup .fine { font: 400 0.8rem var(--mono); color: var(--ink-faint); }
+.signup .status:empty { display: none; }
+.signup .status { min-height: 1.6em; font-size: 0.95rem; color: var(--accent-text); margin-top: 0; }
+.signup .status.err { color: var(--coral-text); }
+@media (max-width: 900px) { .newsletter .wrap { grid-template-columns: 1fr; gap: 32px; padding-block: 72px; } }
+@media (max-width: 420px) { .signup .row .btn { flex: 1 1 100%; } }
+
+/* Footer */
+.site-footer { background: var(--ground); border-top: 1px solid var(--line); color: var(--ink-faint); font: 400 0.8rem var(--mono); letter-spacing: .04em; }
+.site-footer .wrap { display: flex; flex-wrap: wrap; gap: 24px 40px; align-items: center; justify-content: space-between; padding-block: 40px calc(40px + env(safe-area-inset-bottom, 0px)); }
+.site-footer img { height: 34px; width: auto; }
+.site-footer .logo-on-dark { display: var(--show-on-dark); }
+.site-footer .logo-on-light { display: var(--show-on-light); }
+.site-footer nav { display: flex; gap: 22px; flex-wrap: wrap; }
+.site-footer a { color: var(--ink-soft); text-decoration: none; text-transform: uppercase; letter-spacing: .1em; }
+.site-footer a:hover { color: var(--ink); }
+</style>
+</head>
+<body>
+<script>
+/* Apply the saved theme before the page paints. */
+(function () { try { var t = localStorage.getItem("ph-theme"); if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t); } catch (e) {} })();
+</script>
+
+<header class="site-header">
+  <div class="wrap">
+    <a class="logo" href="#top" aria-label="ProductHub Victoria home"><img class="logo-on-dark" src="assets/logo-horizontal-reverse.svg" alt="ProductHub Victoria" width="185" height="38"><img class="logo-on-light" src="assets/logo-horizontal-gradient.svg" alt="ProductHub Victoria" width="185" height="38"></a>
+    <nav class="nav" aria-label="Main">
+      <a href="#what-we-do">What we do</a>
+      <a href="#events">Events</a>
+      <a href="#founders">Founders</a>
+      <a href="#newsletter">Newsletter</a>
+      <div class="theme" role="group" aria-label="Colour theme">
+        <button type="button" id="theme-auto" data-theme-choice="auto" aria-pressed="true">Auto</button>
+        <button type="button" id="theme-light" data-theme-choice="light" aria-pressed="false">Light</button>
+        <button type="button" id="theme-dark" data-theme-choice="dark" aria-pressed="false">Dark</button>
+      </div>
+      <a class="btn btn-coral" href="#events">Events</a>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+  <section class="hero" aria-labelledby="hero-title">
+    <div class="wrap">
+      <div>
+        <span class="eyebrow">Victoria, BC · Vancouver Island</span>
+        <h1 id="hero-title">A small room for the people who <span class="hl">ship software</span> on the Island.</h1>
+        <p class="lede">Product managers, designers, engineers, testers and everyone else in the room when it ships. We meet in small groups to show how the work actually gets done.</p>
+        <div class="actions">
+          <a class="btn btn-coral" href="#newsletter">Get the newsletter</a>
+          <a class="btn btn-ghost" href="#what-we-do">What we do</a>
+        </div>
+      </div>
+      <aside class="next" id="next-event" aria-label="Next event"></aside>
+    </div>
+  </section>
+
+  <section class="band" id="what-we-do" aria-labelledby="wwd-title">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="eyebrow">What we do</span>
+        <h2 id="wwd-title">Show the real work. Leave with something you can use Monday.</h2>
+      </div>
+      <div class="mission">
+        <div>
+          <p class="statement">We're the people who make software products on Vancouver Island. We get together, <strong>in small groups</strong>, to show each other how the work actually gets done, what's changing, and what we're learning as we go.</p>
+          <p class="promise"><span>What you get</span>A small, trusted room of Island product makers where you'll see how peers really build, test and ship, and go home with something you can use Monday.</p>
+        </div>
+        <ul class="values">
+          <li><h3>Show the real work, and leave it behind.</h3><p>Share what you actually built and how you actually decided, messy parts included. Every gathering leaves something the group keeps: a workflow, a template, a lesson.</p><p class="not"><b>Not here</b> keynotes, vendor pitches, socials with nothing to show for them.</p></li>
+          <li><h3>Everyone in the room when it ships.</h3><p>Product is a team sport. Designers, engineers, testers, support and PMs get the same seat and the same mic.</p><p class="not"><b>Not here</b> PM-only circles, seniority hierarchies.</p></li>
+          <li><h3>Say the true thing.</h3><p>What failed matters as much as what worked, especially now, when everyone is pretending they've figured out AI.</p><p class="not"><b>Not here</b> hype, humblebragging, sanitized case studies.</p></li>
+          <li><h3>Small on purpose.</h3><p>We'd rather have twenty people who know each other's work than two hundred who don't. Trust is the product.</p><p class="not"><b>Not here</b> growth for its own sake.</p></li>
+          <li><h3>Island first, open door.</h3><p>Our members are here. Guests can be from anywhere, as long as they come to share how they work rather than sell what they make.</p><p class="not"><b>Not here</b> sponsor-driven programming.</p></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="band tint" id="events" aria-labelledby="events-title">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="eyebrow">Events</span>
+        <h2 id="events-title">Gatherings, upcoming and past</h2>
+        <p>Every event lives on Luma. RSVP there so we can plan food, seats and the room.</p>
+      </div>
+      <div class="events-block">
+        <div class="subhead"><h3>Upcoming</h3><a id="luma-calendar" href="https://luma.com/blafreb6" rel="noopener" target="_blank">Follow on Luma ↗</a></div>
+        <div class="events-grid" id="upcoming"></div>
+      </div>
+      <div class="events-block">
+        <div class="subhead"><h3>Past</h3></div>
+        <div class="events-grid" id="past"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="band" id="founders" aria-labelledby="founders-title">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="eyebrow">Founders</span>
+        <h2 id="founders-title">The two people holding the door open</h2>
+      </div>
+      <div class="founders">
+        <article class="founder">
+          <div class="avatar" aria-hidden="true">MF</div>
+          <div>
+            <h3>Michael J Foucher</h3>
+            <p class="role">Co-founder &amp; host</p>
+            <p class="bio placeholder">Bio to come: a few lines on what Michael builds, where he works, and why he started ProductHub.</p>
+            <p class="links"><a class="placeholder" href="#founders">LinkedIn</a></p>
+          </div>
+        </article>
+        <article class="founder">
+          <div class="avatar" aria-hidden="true">DC</div>
+          <div>
+            <h3>Danijel Coric</h3>
+            <p class="role">Co-founder &amp; host</p>
+            <p class="bio placeholder">Bio to come: a few lines on what Danijel builds, where he works, and why he started ProductHub.</p>
+            <p class="links"><a class="placeholder" href="#founders">LinkedIn</a></p>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="newsletter" id="newsletter" aria-labelledby="nl-title">
+    <div class="wrap">
+      <div>
+        <span class="eyebrow">Newsletter</span>
+        <h2 id="nl-title">Hear about the next room first.</h2>
+        <p>One short email before each gathering, and a recap after with what the group kept. Seats are limited, so subscribers hear first.</p>
+      </div>
+      <form class="signup" id="signup" novalidate>
+        <label for="nl-email">Your email</label>
+        <div class="row">
+          <input type="email" id="nl-email" name="email" autocomplete="email" placeholder="you@example.com" required>
+          <button class="btn btn-coral" type="submit">Subscribe</button>
+        </div>
+        <p class="fine">No spam, no sponsors. Unsubscribe any time.</p>
+        <p class="status" id="nl-status" role="status" aria-live="polite"></p>
+      </form>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <div><img class="logo-on-dark" src="assets/logo-horizontal-reverse.svg" alt="ProductHub Victoria" width="166" height="34"><img class="logo-on-light" src="assets/logo-horizontal-gradient.svg" alt="ProductHub Victoria" width="166" height="34"></div>
+    <nav aria-label="Footer">
+      <a href="#what-we-do">What we do</a>
+      <a href="#events">Events</a>
+      <a href="#founders">Founders</a>
+      <a href="#newsletter">Newsletter</a>
+      <a href="https://luma.com/blafreb6" target="_blank" rel="noopener">Luma ↗</a>
+    </nav>
+    <p>Made on Vancouver Island · © <span id="year">2026</span> ProductHub Victoria</p>
+  </div>
+</footer>
+
+<script>
+/* ===== Edit here ==========================================================
+   EVENTS: add one entry per gathering. Times are local Victoria time with
+   the UTC offset (-07:00 in summer, -08:00 from November to March).
+   An event moves from Upcoming to Past automatically once it has ended.     */
+const EVENTS = [
+  {
+    title: "Fall Event: Harvey AI, up close",
+    start: "2026-11-05T17:00:00-08:00",
+    end:   "2026-11-05T19:30:00-08:00",
+    venue: "525 Fort St, 2nd floor, Suite 201",
+    summary: "An intro and demo of Harvey AI with the people behind it: technical roadmap, data governance and the AI models underneath. Food and drinks provided.",
+    agenda: [["5:00", "Social"], ["6:00", "Harvey AI intro and demo"], ["6:30", "Questions"], ["7:00", "Closing social"]],
+    luma: "https://luma.com/blafreb6"
+  }
+];
+
+/* NEWSLETTER: pick a provider and fill in its one setting.
+   provider: "" (not connected) | "buttondown" | "mailchimp" | "substack"     */
+const NEWSLETTER = {
+  provider: "",
+  buttondownUsername: "",   // e.g. "producthub"  -> buttondown.com/producthub
+  mailchimpFormAction: "",  // the full form action URL from Mailchimp's embedded form
+  substackUrl: ""           // e.g. "https://producthub.substack.com"
+};
+/* ======================================================================== */
+
+const TZ = "America/Vancouver";
+const fmt = (d, o) => new Intl.DateTimeFormat("en-CA", { timeZone: TZ, ...o }).format(d);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const now = new Date();
+const evs = EVENTS.map(e => ({ ...e, s: new Date(e.start), e: new Date(e.end || e.start) }));
+const upcoming = evs.filter(e => e.e >= now).sort((a, b) => a.s - b.s);
+const past = evs.filter(e => e.e < now).sort((a, b) => b.s - a.s);
+
+function whenText(e) {
+  return fmt(e.s, { weekday: "long", month: "long", day: "numeric" }) + " · " +
+    fmt(e.s, { hour: "numeric", minute: "2-digit" }).replace(/\./g, "");
+}
+function card(e, isPast) {
+  const label = isPast ? "See recap on Luma" : "RSVP on Luma";
+  return `<article class="event${isPast ? " past" : ""}">
+    <div class="date" aria-hidden="true"><div class="m">${fmt(e.s, { month: "short" }).replace(".", "")}</div><div class="d">${fmt(e.s, { day: "numeric" })}</div><div class="y">${fmt(e.s, { year: "numeric" })}</div></div>
+    <div class="body"><h4>${esc(e.title)}</h4><p class="meta">${esc(whenText(e))} · ${esc(e.venue)}</p><p class="summary">${esc(e.summary)}</p></div>
+    <a class="btn ${isPast ? "btn-ghost" : "btn-coral"}" href="${esc(e.luma)}" target="_blank" rel="noopener">${label} <span class="arrow" aria-hidden="true">↗</span></a>
+  </article>`;
+}
+
+document.getElementById("upcoming").innerHTML = upcoming.length
+  ? upcoming.map(e => card(e, false)).join("")
+  : `<div class="empty"><strong>The next date is being set.</strong> Subscribe to the newsletter below and you'll hear the moment RSVPs open.</div>`;
+document.getElementById("past").innerHTML = past.length
+  ? past.map(e => card(e, true)).join("")
+  : `<div class="empty"><strong>Recaps land here after each gathering</strong>, with the notes, templates and lessons the room kept.</div>`;
+
+const next = upcoming[0];
+const nextEl = document.getElementById("next-event");
+if (next) {
+  const today = fmt(next.s, { year: "numeric", month: "2-digit", day: "2-digit" }) === fmt(now, { year: "numeric", month: "2-digit", day: "2-digit" });
+  nextEl.innerHTML = `<span class="tag">${today ? "Tonight" : "Next gathering"}</span>
+    <h2>${esc(next.title)}</h2>
+    <p class="when">${esc(whenText(next))}</p>
+    ${next.agenda ? `<ul class="agenda">${next.agenda.map(([t, a]) => `<li><time>${esc(t)}</time><span>${esc(a)}</span></li>`).join("")}</ul>` : ""}
+    <a class="btn btn-coral" href="${esc(next.luma)}" target="_blank" rel="noopener">RSVP on Luma <span class="arrow" aria-hidden="true">↗</span></a>
+    <p class="where">${esc(next.venue)}, Victoria</p>`;
+} else {
+  nextEl.innerHTML = `<span class="tag">Next gathering</span><h2>Date coming soon</h2>
+    <p class="when">We meet in small groups every season. Subscribers hear first.</p>
+    <a class="btn btn-coral" href="#newsletter">Get the newsletter</a>`;
+}
+document.getElementById("year").textContent = now.getFullYear();
+
+/* Theme toggle: Auto follows the device setting; Light and Dark are remembered on this device. */
+(function () {
+  const root = document.documentElement;
+  const buttons = document.querySelectorAll("[data-theme-choice]");
+  const current = () => root.getAttribute("data-theme") || "auto";
+  const sync = () => buttons.forEach(b => b.setAttribute("aria-pressed", String(b.dataset.themeChoice === current())));
+  buttons.forEach(b => b.addEventListener("click", () => {
+    const c = b.dataset.themeChoice;
+    if (c === "auto") root.removeAttribute("data-theme"); else root.setAttribute("data-theme", c);
+    try { c === "auto" ? localStorage.removeItem("ph-theme") : localStorage.setItem("ph-theme", c); } catch (e) {}
+    sync();
+  }));
+  sync();
+})();
+
+/* Newsletter form: posts to the chosen provider in a new tab. */
+(function () {
+  const form = document.getElementById("signup");
+  const input = document.getElementById("nl-email");
+  const status = document.getElementById("nl-status");
+  const P = NEWSLETTER.provider;
+  const targets = {
+    buttondown: () => NEWSLETTER.buttondownUsername && { action: `https://buttondown.com/api/emails/embed-subscribe/${encodeURIComponent(NEWSLETTER.buttondownUsername)}`, field: "email" },
+    mailchimp: () => NEWSLETTER.mailchimpFormAction && { action: NEWSLETTER.mailchimpFormAction, field: "EMAIL" },
+    substack: () => NEWSLETTER.substackUrl && { action: NEWSLETTER.substackUrl.replace(/\/$/, "") + "/api/v1/free?nojs=true", field: "email" }
+  };
+  const t = targets[P] && targets[P]();
+  if (t) { form.action = t.action; form.method = "post"; form.target = "_blank"; input.name = t.field; }
+  form.addEventListener("submit", ev => {
+    status.classList.remove("err");
+    if (!input.value || !input.checkValidity()) {
+      ev.preventDefault(); status.classList.add("err");
+      status.textContent = "Enter an email address like name@example.com."; input.focus(); return;
+    }
+    if (!t) {
+      ev.preventDefault();
+      status.textContent = "Thanks! Sign-up opens shortly. We'll add you as soon as the newsletter is live.";
+      return;
+    }
+    status.textContent = "Almost done: confirm your subscription in the tab that just opened.";
+  });
+})();
+</script>
+</body>
+</html>
