@@ -45,6 +45,30 @@ async function sendInvite(name, email) {
 
 const respond = (url, body) => fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
 
+// Setup check: open https://producthub.info/api/slack-action in a browser.
+// Shows only whether each setting is present (never the values) and whether
+// Resend reports producthub.info as verified.
+export async function GET() {
+  const set = k => Boolean(process.env[k]);
+  const status = {
+    SLACK_SIGNING_SECRET: set("SLACK_SIGNING_SECRET"),
+    SLACK_INVITE_LINK: set("SLACK_INVITE_LINK"),
+    RESEND_API_KEY: set("RESEND_API_KEY"),
+    resend_domain: "not checked"
+  };
+  if (status.RESEND_API_KEY) {
+    try {
+      const r = await fetch("https://api.resend.com/domains", { headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY}` } });
+      if (!r.ok) status.resend_domain = `Resend said ${r.status} (key may be send-only or invalid)`;
+      else {
+        const d = ((await r.json()).data || []).find(x => x.name === "producthub.info");
+        status.resend_domain = d ? d.status : "producthub.info not added in Resend";
+      }
+    } catch (e) { status.resend_domain = `could not reach Resend: ${e.message}`; }
+  }
+  return Response.json(status, { headers: { "Cache-Control": "no-store" } });
+}
+
 export async function POST(request) {
   const raw = await request.text();
   if (!verified(raw, request.headers)) return new Response("Bad signature", { status: 401 });
