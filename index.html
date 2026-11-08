@@ -543,8 +543,8 @@ document.getElementById("year").textContent = now.getFullYear();
     if (bad) { status.classList.add("err"); status.textContent = bad.type === "url" ? "Enter a full link starting with https://, or leave LinkedIn blank." : "Fill in your name, a valid email and what you work on."; bad.focus(); return; }
     button.disabled = true; status.textContent = "Sending…";
     fetch("/api/join", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(Object.fromEntries(new FormData(form))) })
-      .then(r => { if (!r.ok) throw new Error(); form.reset(); status.textContent = "Thanks! A host will review your request and send your Slack invite by email."; })
-      .catch(() => { status.classList.add("err"); status.textContent = "That didn't go through. Try again, or email hello@producthub.info."; })
+      .then(r => { if (!r.ok) throw new Error(r.status); form.reset(); status.textContent = "Thanks! A host will review your request and send your Slack invite by email."; })
+      .catch(e => { status.classList.add("err"); status.textContent = "That didn't go through" + (e.message ? " (error " + e.message + ")" : "") + ". Try again, or email hello@producthub.info."; })
       .finally(() => { button.disabled = false; });
   });
 })();
