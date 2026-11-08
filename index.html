@@ -130,17 +130,17 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
 @media (max-width: 900px) { .hero .wrap { grid-template-columns: 1fr; padding-block: 56px; gap: 44px; } }
 
 /* Next event panel */
-.next { background: var(--surface); border: 1px solid var(--line-strong); padding: 0; min-width: 0; }
+.next { background: var(--surface); border: 1px solid var(--line-strong); padding: 0 0 24px; min-width: 0; }
 .next > * { padding-left: 24px; padding-right: 24px; }
 .next .tag { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding-block: 14px; border-bottom: 1px solid var(--line); font: 500 var(--step--1)/1 var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--coral-text); }
-.next .tag::after { content: "● LIVE ON LUMA"; color: var(--ink-faint); letter-spacing: .1em; }
+.next.has-event .tag::after { content: "● LIVE ON LUMA"; color: var(--ink-faint); letter-spacing: .1em; }
 .next h2 { font-size: var(--step-2); margin-top: 22px; }
 .next .when { margin-top: 8px; color: var(--ink-soft); font-family: var(--mono); font-size: 0.875rem; }
 .agenda { list-style: none; margin: 20px 0 0; padding-top: 0; padding-bottom: 0; display: grid; }
 .agenda li { display: grid; grid-template-columns: 4.2em 1fr; gap: 12px; font-size: 0.95rem; color: var(--ink-soft); padding: 9px 0; border-top: 1px solid var(--line); }
 .agenda time { font-family: var(--mono); font-size: 0.875rem; color: var(--accent-text); font-variant-numeric: tabular-nums; }
 .next .btn { margin: 22px 24px 0; width: calc(100% - 48px); padding-left: 0; padding-right: 0; }
-.next .where { margin-top: 14px; padding-bottom: 20px; font: 400 0.8rem var(--mono); color: var(--ink-faint); text-align: center; letter-spacing: .04em; }
+.next .where { margin-top: 14px; padding-bottom: 0; font: 400 0.8rem var(--mono); color: var(--ink-faint); text-align: center; letter-spacing: .04em; }
 
 /* Sections */
 section { scroll-margin-top: 80px; }
@@ -441,6 +441,7 @@ document.getElementById("past").innerHTML = past.length
 const next = upcoming[0];
 const nextEl = document.getElementById("next-event");
 if (next) {
+  nextEl.classList.add("has-event");
   const today = fmt(next.s, { year: "numeric", month: "2-digit", day: "2-digit" }) === fmt(now, { year: "numeric", month: "2-digit", day: "2-digit" });
   nextEl.innerHTML = `<span class="tag">${today ? "Tonight" : "Next gathering"}</span>
     <h2>${esc(next.title)}</h2>
