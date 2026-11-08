@@ -260,6 +260,15 @@ section { scroll-margin-top: 80px; }
 .site-footer nav { display: flex; gap: 22px; flex-wrap: wrap; }
 .site-footer a { color: var(--ink-soft); text-decoration: none; text-transform: uppercase; letter-spacing: .1em; }
 .site-footer a:hover { color: var(--ink); }
+.site-footer .linkish { font: inherit; background: none; border: 0; padding: 0; cursor: pointer; color: var(--ink-soft); text-transform: uppercase; letter-spacing: .1em; }
+.site-footer .linkish:hover { color: var(--ink); }
+
+/* Analytics consent bar: shown until the visitor chooses; nothing is tracked before "Allow". */
+.consent { position: fixed; z-index: 50; left: 16px; right: 16px; bottom: calc(16px + env(safe-area-inset-bottom, 0px)); max-width: 640px; margin-inline: auto; display: flex; flex-wrap: wrap; align-items: center; gap: 14px 20px; padding: 18px 20px; background: var(--surface); border: 1px solid var(--line-strong); box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35); color: var(--ink-soft); font-size: 0.92rem; line-height: 1.5; }
+.consent[hidden] { display: none; }
+.consent p { flex: 1 1 280px; margin: 0; }
+.consent .actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.consent .btn { padding: 0.8em 1.2em; font-size: 0.9rem; }
 </style>
 </head>
 <body>
@@ -436,10 +445,19 @@ section { scroll-margin-top: 80px; }
       <a href="#slack">Slack</a>
       <a href="#newsletter">Newsletter</a>
       <a href="https://luma.com/blafreb6" target="_blank" rel="noopener">Luma ↗</a>
+      <button type="button" class="linkish" id="analytics-settings">Analytics</button>
     </nav>
     <p>Made on Vancouver Island · © <span id="year">2026</span> ProductHub Victoria</p>
   </div>
 </footer>
+
+<div class="consent" id="consent" role="region" aria-label="Analytics choice" hidden>
+  <p>We use Mixpanel to count visits and see which parts of this site help people find us. It never receives your name or email. Allow analytics?</p>
+  <div class="actions">
+    <button type="button" class="btn btn-coral" data-consent="granted">Allow</button>
+    <button type="button" class="btn btn-ghost" data-consent="denied">No thanks</button>
+  </div>
+</div>
 
 <script>
 /* ===== Edit here ==========================================================
@@ -467,7 +485,71 @@ const NEWSLETTER = {
   mailchimpFormAction: "",  // the full form action URL from Mailchimp's embedded form
   substackUrl: ""           // e.g. "https://producthub.substack.com"
 };
+/* ANALYTICS: Mixpanel project tokens (Mixpanel > Settings > Project Settings).
+   These are public IDs, not secrets. producthub.info uses mixpanelToken;
+   Vercel preview links and localhost use mixpanelDevToken. Leave a token
+   blank to turn tracking off there. Nothing loads until a visitor clicks Allow. */
+const ANALYTICS = {
+  mixpanelToken: "",        // "ProductHub" project
+  mixpanelDevToken: "",     // "ProductHub Dev" project
+  region: "US",             // "US" or "EU": must match the region the projects were created in
+  sessionReplayPercent: 0   // 0 = Session Replay off; e.g. 25 records a quarter of visits
+};
 /* ======================================================================== */
+
+/* Mixpanel, gated on consent. track() is a no-op until the visitor allows analytics. */
+const analytics = (function () {
+  const KEY = "ph-analytics";
+  const PROD_HOSTS = ["producthub.info", "www.producthub.info"];
+  const token = PROD_HOSTS.includes(location.hostname) ? ANALYTICS.mixpanelToken : ANALYTICS.mixpanelDevToken;
+  const bar = document.getElementById("consent");
+  const settings = document.getElementById("analytics-settings");
+  let queue = null, ready = false;
+  const read = () => { try { return localStorage.getItem(KEY); } catch (e) { return null; } };
+  const save = v => { try { localStorage.setItem(KEY, v); } catch (e) {} };
+
+  function load() {
+    if (queue) return;
+    queue = [];
+    const s = document.createElement("script");
+    s.async = true;
+    s.src = "https://cdn.mxpnl.com/libs/mixpanel-2-latest.min.js";
+    s.onload = () => {
+      if (!window.mixpanel || !window.mixpanel.init) return;
+      const config = {
+        autocapture: true,       // page views, clicks and form submits; so no track_pageview here
+        persistence: "localStorage",
+        record_sessions_percent: ANALYTICS.sessionReplayPercent || 0
+      };
+      if (ANALYTICS.region === "EU") config.api_host = "https://api-eu.mixpanel.com";
+      window.mixpanel.init(token, config);
+      if (window.mixpanel.has_opted_out_tracking && window.mixpanel.has_opted_out_tracking()) window.mixpanel.opt_in_tracking();
+      ready = true;
+      queue.splice(0).forEach(([n, p]) => window.mixpanel.track(n, p));
+    };
+    document.head.appendChild(s);
+  }
+  function choose(v) {
+    save(v);
+    bar.hidden = true;
+    if (v === "granted") {
+      if (window.mixpanel && window.mixpanel.__loaded) { window.mixpanel.opt_in_tracking(); queue = []; ready = true; } else load();
+    } else if (ready) { window.mixpanel.opt_out_tracking(); ready = false; queue = null; }
+  }
+  if (token) {
+    bar.querySelectorAll("[data-consent]").forEach(b => b.addEventListener("click", () => choose(b.dataset.consent)));
+    if (settings) settings.addEventListener("click", () => { bar.hidden = false; bar.querySelector("[data-consent]").focus(); });
+    const c = read();
+    if (c === "granted") load(); else if (c !== "denied") bar.hidden = false;
+  } else if (settings) settings.hidden = true;
+
+  return {
+    track(name, props) {
+      if (!queue) return;
+      if (ready) window.mixpanel.track(name, props); else queue.push([name, props]);
+    }
+  };
+})();
 
 const TZ = "America/Vancouver";
 const fmt = (d, o) => new Intl.DateTimeFormat("en-CA", { timeZone: TZ, ...o }).format(d);
@@ -543,7 +625,7 @@ document.getElementById("year").textContent = now.getFullYear();
     if (bad) { status.classList.add("err"); status.textContent = bad.type === "url" ? "Enter a full link starting with https://, or leave LinkedIn blank." : "Fill in your name, a valid email and what you work on."; bad.focus(); return; }
     button.disabled = true; status.textContent = "Sending…";
     fetch("/api/join", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(Object.fromEntries(new FormData(form))) })
-      .then(r => { if (!r.ok) throw new Error(r.status); form.reset(); status.textContent = "Thanks! A host will review your request and send your Slack invite by email."; })
+      .then(r => { if (!r.ok) throw new Error(r.status); analytics.track("slack_join_requested", { has_linkedin: !!form.elements.linkedin.value.trim(), heard_provided: !!form.elements.heard.value.trim() }); form.reset(); status.textContent = "Thanks! A host will review your request and send your Slack invite by email."; })
       .catch(e => { status.classList.add("err"); status.textContent = "That didn't go through" + (e.message ? " (error " + e.message + ")" : "") + ". Try again, or email hello@producthub.info."; })
       .finally(() => { button.disabled = false; });
   });
@@ -583,12 +665,14 @@ document.getElementById("year").textContent = now.getFullYear();
         .then(r => r.json().catch(() => ({})).then(j => ({ ok: r.ok, j })))
         .then(({ ok, j }) => {
           if (!ok || (j.status && j.status !== "success")) throw new Error(j.errors ? [].concat(j.errors).join(" ") : "failed");
+          analytics.track("newsletter_signup_completed", { provider: P, confirmed_response: true });
           form.reset();
           status.textContent = "You're in. Check your inbox and click the confirmation link to finish.";
         })
         .catch(err => {
           if (err instanceof TypeError) {
             /* Sent, but the browser couldn't read Kit's reply. Kit still emails the confirmation. */
+            analytics.track("newsletter_signup_completed", { provider: P, confirmed_response: false });
             form.reset();
             status.textContent = "Thanks! Check your inbox for a confirmation link. Nothing after a few minutes? Email hello@producthub.info.";
             return;
@@ -599,9 +683,26 @@ document.getElementById("year").textContent = now.getFullYear();
         .finally(() => { button.disabled = false; });
       return;
     }
+    analytics.track("newsletter_signup_completed", { provider: P, confirmed_response: false });
     status.textContent = "Almost done: confirm your subscription in the tab that just opened.";
   });
 })();
+
+/* Luma clicks: which spot on the page sent someone to RSVP or follow the calendar. */
+document.addEventListener("click", ev => {
+  const a = ev.target.closest && ev.target.closest('a[href*="luma.com"]');
+  if (!a) return;
+  const placement = a.closest("#next-event") ? "hero_next_event"
+    : a.closest(".event.past") ? "past_event"
+    : a.closest(".event") ? "upcoming_event"
+    : a.id === "luma-calendar" ? "events_follow"
+    : a.closest(".site-footer") ? "footer" : "other";
+  const props = { placement };
+  const title = a.closest(".event") && a.closest(".event").querySelector("h4");
+  const t = title ? title.textContent : (a.closest("#next-event") && next ? next.title : "");
+  if (t) props.event_title = t;
+  analytics.track("luma_link_clicked", props);
+});
 </script>
 </body>
 </html>
