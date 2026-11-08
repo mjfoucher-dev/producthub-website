@@ -208,6 +208,28 @@ section { scroll-margin-top: 80px; }
 @media (max-width: 900px) { .founders { grid-template-columns: 1fr; } }
 @media (max-width: 480px) { .founder { grid-template-columns: 1fr; padding: 24px; } .avatar { width: 72px; height: 72px; font-size: 1.1rem; } }
 
+/* Slack join request */
+.join .wrap { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 64px; align-items: start; }
+.join .section-head { margin-bottom: 0; }
+.join .steps { list-style: none; margin: 28px 0 0; padding: 0; display: grid; gap: 10px; color: var(--ink-soft); font-size: 0.95rem; }
+.join .steps li { display: grid; grid-template-columns: 2.2em 1fr; gap: 8px; }
+.join .steps b { font: 500 0.8rem/1.9 var(--mono); color: var(--coral-text); letter-spacing: .06em; }
+.join-form { display: grid; gap: 18px; background: var(--surface); border: 1px solid var(--line-strong); padding: 28px; }
+.join-form .grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+.join-form label { display: grid; gap: 8px; font: 500 var(--step--1)/1 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--ink-soft); }
+.join-form label span.opt { text-transform: none; letter-spacing: 0; color: var(--ink-faint); font-weight: 400; }
+.join-form input, .join-form textarea { font: 400 1rem/1.5 var(--font); color: var(--ink); background: var(--ground); border: 1px solid var(--line-strong); border-radius: 0; padding: 0.8em 0.9em; width: 100%; letter-spacing: 0; text-transform: none; }
+.join-form textarea { min-height: 96px; resize: vertical; }
+.join-form input:focus, .join-form textarea:focus { outline: none; border-color: var(--accent-text); }
+.join-form .hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+.join-form .foot { display: flex; flex-wrap: wrap; gap: 14px 20px; align-items: center; }
+.join-form .fine { font: 400 0.8rem var(--mono); color: var(--ink-faint); flex: 1 1 220px; }
+.join-form .status { min-height: 1.4em; font-size: 0.95rem; color: var(--accent-text); }
+.join-form .status:empty { display: none; }
+.join-form .status.err { color: var(--coral-text); }
+@media (max-width: 900px) { .join .wrap { grid-template-columns: 1fr; gap: 36px; } }
+@media (max-width: 560px) { .join-form .grid2 { grid-template-columns: 1fr; } .join-form { padding: 20px; } }
+
 /* Newsletter */
 .newsletter { background: var(--ground); position: relative; }
 .newsletter::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 3px; background: var(--gradient); }
@@ -253,6 +275,7 @@ section { scroll-margin-top: 80px; }
       <a href="#what-we-do">What we do</a>
       <a href="#events">Events</a>
       <a href="#founders">Founders</a>
+      <a href="#slack">Slack</a>
       <a href="#newsletter">Newsletter</a>
       <div class="theme" role="group" aria-label="Colour theme">
         <button type="button" id="theme-auto" data-theme-choice="auto" aria-pressed="true">Auto</button>
@@ -349,6 +372,40 @@ section { scroll-margin-top: 80px; }
     </div>
   </section>
 
+  <section class="band tint join" id="slack" aria-labelledby="join-title">
+    <div class="wrap">
+      <div>
+        <div class="section-head">
+          <span class="eyebrow">Slack</span>
+          <h2 id="join-title">Keep the conversation going between events.</h2>
+          <p>A members-only Slack for people who build software on the Island. Share what you're working on, ask the room, and hear about gatherings first.</p>
+        </div>
+        <ol class="steps">
+          <li><b>01</b><span>Tell us a little about what you work on.</span></li>
+          <li><b>02</b><span>A host reviews every request, usually within a few days.</span></li>
+          <li><b>03</b><span>Your invite arrives by email from Slack.</span></li>
+        </ol>
+      </div>
+      <form class="join-form" id="join-form" novalidate>
+        <div class="grid2">
+          <label for="jf-name">Name<input id="jf-name" name="name" autocomplete="name" required></label>
+          <label for="jf-email">Email<input id="jf-email" name="email" type="email" autocomplete="email" required></label>
+        </div>
+        <label for="jf-work">What do you work on?<textarea id="jf-work" name="work" required placeholder="Your role, team or product. A sentence or two is plenty."></textarea></label>
+        <div class="grid2">
+          <label for="jf-linkedin">LinkedIn <span class="opt">(optional)</span><input id="jf-linkedin" name="linkedin" type="url" placeholder="https://linkedin.com/in/…"></label>
+          <label for="jf-heard">How did you hear about us? <span class="opt">(optional)</span><input id="jf-heard" name="heard"></label>
+        </div>
+        <div class="hp" aria-hidden="true"><label for="jf-company">Company<input id="jf-company" name="company" tabindex="-1" autocomplete="off"></label></div>
+        <div class="foot">
+          <button class="btn btn-coral" type="submit">Request an invite</button>
+          <p class="fine">Small on purpose: no recruiters or vendor pitches.</p>
+        </div>
+        <p class="status" id="jf-status" role="status" aria-live="polite"></p>
+      </form>
+    </div>
+  </section>
+
   <section class="newsletter" id="newsletter" aria-labelledby="nl-title">
     <div class="wrap">
       <div>
@@ -376,6 +433,7 @@ section { scroll-margin-top: 80px; }
       <a href="#what-we-do">What we do</a>
       <a href="#events">Events</a>
       <a href="#founders">Founders</a>
+      <a href="#slack">Slack</a>
       <a href="#newsletter">Newsletter</a>
       <a href="https://luma.com/blafreb6" target="_blank" rel="noopener">Luma ↗</a>
     </nav>
@@ -470,6 +528,25 @@ document.getElementById("year").textContent = now.getFullYear();
     sync();
   }));
   sync();
+})();
+
+/* Slack join request: posts to /api/join, which forwards to a private Slack channel. */
+(function () {
+  const form = document.getElementById("join-form");
+  if (!form) return;
+  const status = document.getElementById("jf-status");
+  const button = form.querySelector("button[type=submit]");
+  form.addEventListener("submit", ev => {
+    ev.preventDefault();
+    status.classList.remove("err");
+    const bad = [...form.querySelectorAll("input[required], textarea[required], input[type=email], input[type=url]")].find(el => !el.checkValidity() || (el.required && !el.value.trim()));
+    if (bad) { status.classList.add("err"); status.textContent = bad.type === "url" ? "Enter a full link starting with https://, or leave LinkedIn blank." : "Fill in your name, a valid email and what you work on."; bad.focus(); return; }
+    button.disabled = true; status.textContent = "Sending…";
+    fetch("/api/join", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(Object.fromEntries(new FormData(form))) })
+      .then(r => { if (!r.ok) throw new Error(); form.reset(); status.textContent = "Thanks! A host will review your request and send your Slack invite by email."; })
+      .catch(() => { status.classList.add("err"); status.textContent = "That didn't go through. Try again, or email hello@producthub.info."; })
+      .finally(() => { button.disabled = false; });
+  });
 })();
 
 /* Newsletter form: posts to the chosen provider in a new tab. */
