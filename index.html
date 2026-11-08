@@ -276,18 +276,6 @@ section { scroll-margin-top: 80px; }
 /* Apply the saved theme before the page paints. */
 (function () { try { var t = localStorage.getItem("ph-theme"); if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t); } catch (e) {} })();
 </script>
-<script>
-/* ?analytics-debug: an on-page log of the analytics steps, for checking Mixpanel in a real browser. */
-if (/[?&]analytics-debug/.test(location.search)) {
-  const box = document.createElement("pre");
-  box.style.cssText = "position:fixed;top:8px;left:8px;z-index:99;max-width:90vw;white-space:pre-wrap;background:#fff;color:#000;padding:10px;font:12px monospace;border:2px solid #000";
-  box.textContent = "analytics debug";
-  window.phLog = m => { box.textContent += "\n" + m; };
-  document.addEventListener("DOMContentLoaded", () => document.body.appendChild(box));
-  window.addEventListener("error", e => window.phLog("JS error: " + e.message + " (line " + e.lineno + ")"));
-  window.phLog("do-not-track: " + (navigator.doNotTrack || window.doNotTrack || "none"));
-}
-</script>
 
 <header class="site-header">
   <div class="wrap">
@@ -530,10 +518,7 @@ const analytics = (function () {
     /* Script and data go through producthub.info (rewrites in vercel.json), so blockers that
        stop third-party Mixpanel requests don't drop visitors who chose Allow. */
     s.src = "/ph/lib.js";
-    s.onerror = () => { if (window.phLog) window.phLog("Mixpanel script failed to load (blocked?)"); };
-    if (window.phLog) window.phLog("loading Mixpanel script");
     s.onload = () => {
-      if (window.phLog) window.phLog("script loaded; init available: " + !!(window.mixpanel && window.mixpanel.init));
       if (!window.mixpanel || !window.mixpanel.init) return;
       const config = {
         autocapture: true,       // page views, clicks and form submits; so no track_pageview here
@@ -542,15 +527,10 @@ const analytics = (function () {
         api_host: location.origin + "/ph",
         api_routes: { track: "t", engage: "e", groups: "g", record: "r", flags: "f", settings: "s" }
       };
-      if (window.phLog) config.debug = true;
       window.mixpanel.init(token, config);
       if (window.mixpanel.has_opted_out_tracking && window.mixpanel.has_opted_out_tracking()) window.mixpanel.opt_in_tracking();
       ready = true;
       queue.splice(0).forEach(([n, p]) => window.mixpanel.track(n, p));
-      if (window.phLog) {
-        window.phLog("started: " + (token === ANALYTICS.mixpanelToken ? "ProductHub" : "ProductHub Dev") + ", opted out: " + window.mixpanel.has_opted_out_tracking());
-        window.mixpanel.track("analytics_debug", {}, { send_immediately: true }, r => window.phLog("test event result: " + JSON.stringify(r)));
-      }
     };
     document.head.appendChild(s);
   }
@@ -565,7 +545,6 @@ const analytics = (function () {
     bar.querySelectorAll("[data-consent]").forEach(b => b.addEventListener("click", () => choose(b.dataset.consent)));
     if (settings) settings.addEventListener("click", () => { bar.hidden = false; bar.querySelector("[data-consent]").focus(); });
     const c = read();
-    if (window.phLog) window.phLog("saved choice: " + c);
     if (c === "granted") load(); else if (c !== "denied") bar.hidden = false;
   } else if (settings) settings.hidden = true;
 
