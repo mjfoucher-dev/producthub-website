@@ -524,10 +524,26 @@ const analytics = (function () {
         record_sessions_percent: ANALYTICS.sessionReplayPercent || 0
       };
       if (ANALYTICS.region === "EU") config.api_host = "https://api-eu.mixpanel.com";
+      const debug = /[?&]analytics-debug/.test(location.search);
+      if (debug) config.debug = true;
       window.mixpanel.init(token, config);
       if (window.mixpanel.has_opted_out_tracking && window.mixpanel.has_opted_out_tracking()) window.mixpanel.opt_in_tracking();
       ready = true;
       queue.splice(0).forEach(([n, p]) => window.mixpanel.track(n, p));
+      /* ?analytics-debug shows what the browser sees and sends one test event immediately. */
+      if (debug) {
+        const box = document.createElement("pre");
+        box.style.cssText = "position:fixed;top:8px;left:8px;z-index:99;max-width:90vw;white-space:pre-wrap;background:#fff;color:#000;padding:10px;font:12px monospace;border:2px solid #000";
+        const dnt = navigator.doNotTrack || window.doNotTrack || "none";
+        const lines = ["project: " + (token === ANALYTICS.mixpanelToken ? "ProductHub" : "ProductHub Dev"), "do-not-track: " + dnt,
+          "opted out: " + window.mixpanel.has_opted_out_tracking(), "sending test event..."];
+        box.textContent = lines.join("\n");
+        document.body.appendChild(box);
+        window.mixpanel.track("analytics_debug", {}, { send_immediately: true }, r => {
+          lines[3] = "test event result: " + JSON.stringify(r);
+          box.textContent = lines.join("\n");
+        });
+      }
     };
     document.head.appendChild(s);
   }
