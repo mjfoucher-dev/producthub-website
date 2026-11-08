@@ -9,7 +9,7 @@ const FROM = "ProductHub Victoria <hello@producthub.info>";
 const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
 function verified(raw, headers) {
-  const secret = process.env.SLACK_SIGNING_SECRET;
+  const secret = (process.env.SLACK_SIGNING_SECRET || "").trim();
   const ts = headers.get("x-slack-request-timestamp");
   const sig = headers.get("x-slack-signature") || "";
   if (!secret || !ts || Math.abs(Date.now() / 1000 - Number(ts)) > 300) return false;
@@ -18,7 +18,7 @@ function verified(raw, headers) {
 }
 
 async function sendInvite(name, email) {
-  const invite = process.env.SLACK_INVITE_LINK, key = process.env.RESEND_API_KEY;
+  const invite = (process.env.SLACK_INVITE_LINK || "").trim(), key = (process.env.RESEND_API_KEY || "").trim();
   if (!invite) throw new Error("SLACK_INVITE_LINK is not set in Vercel.");
   if (!key) throw new Error("RESEND_API_KEY is not set in Vercel.");
   const first = name.split(/\s+/)[0];
@@ -54,11 +54,17 @@ export async function GET() {
     SLACK_SIGNING_SECRET: set("SLACK_SIGNING_SECRET"),
     SLACK_INVITE_LINK: set("SLACK_INVITE_LINK"),
     RESEND_API_KEY: set("RESEND_API_KEY"),
+    signing_secret_shape: (() => {
+      const raw = process.env.SLACK_SIGNING_SECRET || "", t = raw.trim();
+      if (!t) return "missing";
+      const note = raw !== t ? " (had spaces around it; ignored)" : "";
+      return /^[0-9a-f]{32}$/.test(t) ? "looks like a Slack secret" + note : `unexpected: ${t.length} characters, should be 32 letters/numbers` + note;
+    })(),
     resend_domain: "not checked"
   };
   if (status.RESEND_API_KEY) {
     try {
-      const r = await fetch("https://api.resend.com/domains", { headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY}` } });
+      const r = await fetch("https://api.resend.com/domains", { headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY.trim()}` } });
       if (!r.ok) status.resend_domain = `Resend said ${r.status} (key may be send-only or invalid)`;
       else {
         const d = ((await r.json()).data || []).find(x => x.name === "producthub.info");
