@@ -401,9 +401,10 @@ const EVENTS = [
 ];
 
 /* NEWSLETTER: pick a provider and fill in its one setting.
-   provider: "" (not connected) | "buttondown" | "mailchimp" | "substack"     */
+   provider: "" (not connected) | "kit" | "buttondown" | "mailchimp" | "substack" */
 const NEWSLETTER = {
-  provider: "",
+  provider: "kit",
+  kitFormId: "10161825",    // Kit form "Inline" (Grow > Landing Pages & Forms)
   buttondownUsername: "",   // e.g. "producthub"  -> buttondown.com/producthub
   mailchimpFormAction: "",  // the full form action URL from Mailchimp's embedded form
   substackUrl: ""           // e.g. "https://producthub.substack.com"
@@ -478,12 +479,14 @@ document.getElementById("year").textContent = now.getFullYear();
   const status = document.getElementById("nl-status");
   const P = NEWSLETTER.provider;
   const targets = {
+    kit: () => NEWSLETTER.kitFormId && { action: `https://app.kit.com/forms/${encodeURIComponent(NEWSLETTER.kitFormId)}/subscriptions`, field: "email_address", ajax: true },
     buttondown: () => NEWSLETTER.buttondownUsername && { action: `https://buttondown.com/api/emails/embed-subscribe/${encodeURIComponent(NEWSLETTER.buttondownUsername)}`, field: "email" },
     mailchimp: () => NEWSLETTER.mailchimpFormAction && { action: NEWSLETTER.mailchimpFormAction, field: "EMAIL" },
     substack: () => NEWSLETTER.substackUrl && { action: NEWSLETTER.substackUrl.replace(/\/$/, "") + "/api/v1/free?nojs=true", field: "email" }
   };
   const t = targets[P] && targets[P]();
-  if (t) { form.action = t.action; form.method = "post"; form.target = "_blank"; input.name = t.field; }
+  if (t) { form.action = t.action; form.method = "post"; input.name = t.field; if (!t.ajax) form.target = "_blank"; }
+  const button = form.querySelector("button[type=submit]");
   form.addEventListener("submit", ev => {
     status.classList.remove("err");
     if (!input.value || !input.checkValidity()) {
@@ -493,6 +496,30 @@ document.getElementById("year").textContent = now.getFullYear();
     if (!t) {
       ev.preventDefault();
       status.textContent = "Thanks! Sign-up opens shortly. We'll add you as soon as the newsletter is live.";
+      return;
+    }
+    if (t.ajax) {
+      ev.preventDefault();
+      button.disabled = true;
+      status.textContent = "Subscribing…";
+      fetch(t.action, { method: "POST", body: new FormData(form), headers: { Accept: "application/json" } })
+        .then(r => r.json().catch(() => ({})).then(j => ({ ok: r.ok, j })))
+        .then(({ ok, j }) => {
+          if (!ok || (j.status && j.status !== "success")) throw new Error(j.errors ? [].concat(j.errors).join(" ") : "failed");
+          form.reset();
+          status.textContent = "You're in. Check your inbox and click the confirmation link to finish.";
+        })
+        .catch(err => {
+          if (err instanceof TypeError) {
+            /* Sent, but the browser couldn't read Kit's reply. Kit still emails the confirmation. */
+            form.reset();
+            status.textContent = "Thanks! Check your inbox for a confirmation link. Nothing after a few minutes? Email hello@producthub.info.";
+            return;
+          }
+          status.classList.add("err");
+          status.textContent = "That didn't go through. Check the address and try again, or email hello@producthub.info.";
+        })
+        .finally(() => { button.disabled = false; });
       return;
     }
     status.textContent = "Almost done: confirm your subscription in the tab that just opened.";
