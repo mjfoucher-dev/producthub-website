@@ -511,7 +511,7 @@ const analytics = (function () {
   let scriptAdded = false;
   function start() {
     if (ready || !window.mixpanel || !window.mixpanel.init || read() === "denied") return;
-    if (window.mixpanel.__loaded) { window.mixpanel.opt_in_tracking(); ready = true; queue.splice(0).forEach(([n, p]) => window.mixpanel.track(n, p)); return; }
+    if (window.mixpanel.__loaded) { window.mixpanel.opt_in_tracking(); ready = true; queue.splice(0).forEach(([n, p, o]) => window.mixpanel.track(n, p, o)); return; }
     const config = {
       autocapture: true,       // page views, clicks and form submits; so no track_pageview here
       persistence: "localStorage",
@@ -522,7 +522,7 @@ const analytics = (function () {
     window.mixpanel.init(token, config);
     if (window.mixpanel.has_opted_out_tracking && window.mixpanel.has_opted_out_tracking()) window.mixpanel.opt_in_tracking();
     ready = true;
-    queue.splice(0).forEach(([n, p]) => window.mixpanel.track(n, p));
+    queue.splice(0).forEach(([n, p, o]) => window.mixpanel.track(n, p, o));
   }
   function load() {
     if (!queue) queue = [];
@@ -552,9 +552,9 @@ const analytics = (function () {
   } else if (settings) settings.hidden = true;
 
   return {
-    track(name, props) {
+    track(name, props, opts) {
       if (!queue) return;
-      if (ready) window.mixpanel.track(name, props); else queue.push([name, props]);
+      if (ready) window.mixpanel.track(name, props, opts); else queue.push([name, props, opts]);
     }
   };
 })();
@@ -696,20 +696,43 @@ document.getElementById("year").textContent = now.getFullYear();
   });
 })();
 
-/* Luma clicks: which spot on the page sent someone to RSVP or follow the calendar. */
+/* Outbound clicks: one event for every link that leaves the site (plus email links), so new links are covered automatically. */
+const LINK_DESTINATIONS = [
+  ["luma", /(^|\.)(luma\.com|lu\.ma)$/],
+  ["linkedin", /(^|\.)linkedin\.com$/],
+  ["slack", /(^|\.)slack\.com$/],
+  ["newsletter", /(^|\.)(kit\.com|convertkit\.com|substack\.com|buttondown\.com|buttondown\.email)$|^newsletter\.producthub\.info$/]
+];
 document.addEventListener("click", ev => {
-  const a = ev.target.closest && ev.target.closest('a[href*="luma.com"]');
+  const a = ev.target.closest && ev.target.closest("a[href]");
   if (!a) return;
+  let url;
+  try { url = new URL(a.getAttribute("href"), location.href); } catch (e) { return; }
+  const isEmail = url.protocol === "mailto:";
+  if (!isEmail && (!/^https?:$/.test(url.protocol) || url.host === location.host)) return;
+  const host = url.hostname.toLowerCase();
+  const match = LINK_DESTINATIONS.find(([, re]) => re.test(host));
+  const section = a.closest("section[id]");
   const placement = a.closest("#next-event") ? "hero_next_event"
     : a.closest(".event.past") ? "past_event"
     : a.closest(".event") ? "upcoming_event"
     : a.id === "luma-calendar" ? "events_follow"
-    : a.closest(".site-footer") ? "footer" : "other";
-  const props = { placement };
-  const title = a.closest(".event") && a.closest(".event").querySelector("h4");
-  const t = title ? title.textContent : (a.closest("#next-event") && next ? next.title : "");
+    : a.closest(".site-footer") ? "footer"
+    : section ? section.id
+    : a.closest(".hero") ? "hero" : "other";
+  const props = {
+    link_destination: isEmail ? "email" : match ? match[0] : "other",
+    link_url: isEmail ? "mailto:" + url.pathname : url.origin + url.pathname,
+    link_text: (a.textContent || "").replace(/\s+/g, " ").replace(/↗/g, "").trim().slice(0, 100),
+    placement,
+    page_path: location.pathname
+  };
+  const card = a.closest(".event");
+  const title = card && card.querySelector("h4");
+  const t = title ? title.textContent.trim() : (a.closest("#next-event") && next ? next.title : "");
   if (t) props.event_title = t;
-  analytics.track("luma_link_clicked", props);
+  /* sendBeacon so the event still goes out if the browser leaves the page right away. */
+  analytics.track("outbound_link_clicked", props, { transport: "sendBeacon", send_immediately: true });
 });
 </script>
 </body>
