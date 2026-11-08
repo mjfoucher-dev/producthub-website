@@ -263,7 +263,7 @@ section { scroll-margin-top: 80px; }
 .site-footer .linkish { font: inherit; background: none; border: 0; padding: 0; cursor: pointer; color: var(--ink-soft); text-transform: uppercase; letter-spacing: .1em; }
 .site-footer .linkish:hover { color: var(--ink); }
 
-/* Analytics consent bar: shown until the visitor chooses; nothing is tracked before "Allow". */
+/* Analytics choice panel: opened from the footer "Analytics" link; tracking is on unless the visitor turns it off. */
 .consent { position: fixed; z-index: 50; left: 16px; right: 16px; bottom: calc(16px + env(safe-area-inset-bottom, 0px)); max-width: 640px; margin-inline: auto; display: flex; flex-wrap: wrap; align-items: center; gap: 14px 20px; padding: 18px 20px; background: var(--surface); border: 1px solid var(--line-strong); box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35); color: var(--ink-soft); font-size: 0.92rem; line-height: 1.5; }
 .consent[hidden] { display: none; }
 .consent p { flex: 1 1 280px; margin: 0; }
@@ -452,10 +452,10 @@ section { scroll-margin-top: 80px; }
 </footer>
 
 <div class="consent" id="consent" role="region" aria-label="Analytics choice" hidden>
-  <p>We use Mixpanel to count visits and see which parts of this site help people find us. It never receives your name or email. Allow analytics?</p>
+  <p>We use Mixpanel to count visits and see which parts of this site help people find us. It never receives your name or email. You can turn it off for this browser.</p>
   <div class="actions">
-    <button type="button" class="btn btn-coral" data-consent="granted">Allow</button>
-    <button type="button" class="btn btn-ghost" data-consent="denied">No thanks</button>
+    <button type="button" class="btn btn-coral" data-consent="granted">Keep on</button>
+    <button type="button" class="btn btn-ghost" data-consent="denied">Turn off</button>
   </div>
 </div>
 
@@ -497,7 +497,7 @@ const ANALYTICS = {
 };
 /* ======================================================================== */
 
-/* Mixpanel, gated on consent. track() is a no-op until the visitor allows analytics. */
+/* Mixpanel, on by default. A visitor who picks "Turn off" is opted out and stays out (saved in localStorage). */
 const analytics = (function () {
   const KEY = "ph-analytics";
   const PROD_HOSTS = ["producthub.info", "www.producthub.info"];
@@ -508,44 +508,47 @@ const analytics = (function () {
   const read = () => { try { return localStorage.getItem(KEY); } catch (e) { return null; } };
   const save = v => { try { localStorage.setItem(KEY, v); } catch (e) {} };
 
+  let scriptAdded = false;
+  function start() {
+    if (ready || !window.mixpanel || !window.mixpanel.init || read() === "denied") return;
+    if (window.mixpanel.__loaded) { window.mixpanel.opt_in_tracking(); ready = true; queue.splice(0).forEach(([n, p]) => window.mixpanel.track(n, p)); return; }
+    const config = {
+      autocapture: true,       // page views, clicks and form submits; so no track_pageview here
+      persistence: "localStorage",
+      record_sessions_percent: ANALYTICS.sessionReplayPercent || 0,
+      api_host: location.origin + "/ph",
+      api_routes: { track: "t", engage: "e", groups: "g", record: "r", flags: "f", settings: "s" }
+    };
+    window.mixpanel.init(token, config);
+    if (window.mixpanel.has_opted_out_tracking && window.mixpanel.has_opted_out_tracking()) window.mixpanel.opt_in_tracking();
+    ready = true;
+    queue.splice(0).forEach(([n, p]) => window.mixpanel.track(n, p));
+  }
   function load() {
-    if (queue) return;
-    queue = [];
+    if (!queue) queue = [];
+    if (scriptAdded) return start();
+    scriptAdded = true;
     /* The CDN library only starts if it finds Mixpanel's snippet stub (an array with __SV) on window. */
     if (!window.mixpanel) { window.mixpanel = []; window.mixpanel.__SV = 1.2; }
     const s = document.createElement("script");
     s.async = true;
     /* Script and data go through producthub.info (rewrites in vercel.json), so blockers that
-       stop third-party Mixpanel requests don't drop visitors who chose Allow. */
+       stop third-party Mixpanel requests don't drop visitors. */
     s.src = "/ph/lib.js";
-    s.onload = () => {
-      if (!window.mixpanel || !window.mixpanel.init) return;
-      const config = {
-        autocapture: true,       // page views, clicks and form submits; so no track_pageview here
-        persistence: "localStorage",
-        record_sessions_percent: ANALYTICS.sessionReplayPercent || 0,
-        api_host: location.origin + "/ph",
-        api_routes: { track: "t", engage: "e", groups: "g", record: "r", flags: "f", settings: "s" }
-      };
-      window.mixpanel.init(token, config);
-      if (window.mixpanel.has_opted_out_tracking && window.mixpanel.has_opted_out_tracking()) window.mixpanel.opt_in_tracking();
-      ready = true;
-      queue.splice(0).forEach(([n, p]) => window.mixpanel.track(n, p));
-    };
+    s.onload = start;
     document.head.appendChild(s);
   }
   function choose(v) {
     save(v);
     bar.hidden = true;
-    if (v === "granted") {
-      if (window.mixpanel && window.mixpanel.__loaded) { window.mixpanel.opt_in_tracking(); queue = []; ready = true; } else load();
-    } else if (ready) { window.mixpanel.opt_out_tracking(); ready = false; queue = null; }
+    if (v === "granted") load();
+    else { if (ready) window.mixpanel.opt_out_tracking(); ready = false; queue = null; }
   }
   if (token) {
     bar.querySelectorAll("[data-consent]").forEach(b => b.addEventListener("click", () => choose(b.dataset.consent)));
     if (settings) settings.addEventListener("click", () => { bar.hidden = false; bar.querySelector("[data-consent]").focus(); });
     const c = read();
-    if (c === "granted") load(); else if (c !== "denied") bar.hidden = false;
+    if (c !== "denied") load();
   } else if (settings) settings.hidden = true;
 
   return {
