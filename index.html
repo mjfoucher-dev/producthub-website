@@ -504,7 +504,7 @@ const NEWSLETTER = {
 const ANALYTICS = {
   mixpanelToken: "ab62d2882553687de47708bc12681ec0", // "ProductHub" project
   mixpanelDevToken: "38480eb3158ce8431e6d0835c7abc89c", // "ProductHub Dev" project
-  region: "US",             // "US" or "EU": must match the region the projects were created in
+  region: "US",             // Mixpanel data region; the /ph rewrites in vercel.json send to the US servers
   sessionReplayPercent: 0   // 0 = Session Replay off; e.g. 25 records a quarter of visits
 };
 /* ======================================================================== */
@@ -527,7 +527,9 @@ const analytics = (function () {
     if (!window.mixpanel) { window.mixpanel = []; window.mixpanel.__SV = 1.2; }
     const s = document.createElement("script");
     s.async = true;
-    s.src = "https://cdn.mxpnl.com/libs/mixpanel-2-latest.min.js";
+    /* Script and data go through producthub.info (rewrites in vercel.json), so blockers that
+       stop third-party Mixpanel requests don't drop visitors who chose Allow. */
+    s.src = "/ph/lib.js";
     s.onerror = () => { if (window.phLog) window.phLog("Mixpanel script failed to load (blocked?)"); };
     if (window.phLog) window.phLog("loading Mixpanel script");
     s.onload = () => {
@@ -536,9 +538,10 @@ const analytics = (function () {
       const config = {
         autocapture: true,       // page views, clicks and form submits; so no track_pageview here
         persistence: "localStorage",
-        record_sessions_percent: ANALYTICS.sessionReplayPercent || 0
+        record_sessions_percent: ANALYTICS.sessionReplayPercent || 0,
+        api_host: location.origin + "/ph",
+        api_routes: { track: "t", engage: "e", groups: "g", record: "r", flags: "f", settings: "s" }
       };
-      if (ANALYTICS.region === "EU") config.api_host = "https://api-eu.mixpanel.com";
       if (window.phLog) config.debug = true;
       window.mixpanel.init(token, config);
       if (window.mixpanel.has_opted_out_tracking && window.mixpanel.has_opted_out_tracking()) window.mixpanel.opt_in_tracking();
