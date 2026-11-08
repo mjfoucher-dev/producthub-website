@@ -511,6 +511,8 @@ const analytics = (function () {
   function load() {
     if (queue) return;
     queue = [];
+    /* The CDN library only starts if it finds Mixpanel's snippet stub (an array with __SV) on window. */
+    if (!window.mixpanel) { window.mixpanel = []; window.mixpanel.__SV = 1.2; }
     const s = document.createElement("script");
     s.async = true;
     s.src = "https://cdn.mxpnl.com/libs/mixpanel-2-latest.min.js";
