@@ -23,7 +23,7 @@ function approveLine(name, email) {
     "See you there,",
     "ProductHub Victoria"
   ].join("\n");
-  const href = `mailto:${email}?subject=${encodeURIComponent(subject)}&amp;body=${encodeURIComponent(body)}`;
+  const href = `mailto:${encodeURI(email).replace(/[?&#|<>]/g, encodeURIComponent)}?subject=${encodeURIComponent(subject)}&amp;body=${encodeURIComponent(body)}`;
   return `<${href}|✅ Approve: open invite email>   ·   To decline, just ignore this.`;
 }
 
