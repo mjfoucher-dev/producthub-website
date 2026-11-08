@@ -1,0 +1,14 @@
+{
+  "name": "producthub-website",
+  "version": "1.0.0",
+  "description": "ProductHub Victoria - A small room for the people who make software products on Vancouver Island",
+  "private": true,
+  "scripts": {
+    "dev": "vercel dev",
+    "build": "echo 'Static site - no build required'",
+    "lint": "echo 'No linter configured'"
+  },
+  "dependencies": {
+    "@vercel/analytics": "^1.4.1"
+  }
+}
