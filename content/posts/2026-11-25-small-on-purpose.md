@@ -3,13 +3,10 @@ title: Why we keep ProductHub Victoria small
 type: blog
 date: 2026-11-25
 slug: small-on-purpose
-draft: true
 description: "Twenty people who know each other's work beat two hundred who don't. Why ProductHub Victoria stays small, and what that rules out."
 author: Michael Foucher
 tags: [community, values]
 ---
-
-*Sample post: this is a draft that only shows on preview links, so you can see how a blog article looks. Edit it, or delete the file, before it goes live.*
 
 We'd rather have twenty people who know each other's work than two hundred who don't. That's one of the five values we wrote down before our first gathering, and it shapes almost every decision we make.
 
