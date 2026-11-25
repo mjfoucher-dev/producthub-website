@@ -1,6 +1,32 @@
 # ProductHub Victoria website
 
-A plain static site: open `index.html` in a browser, or serve this folder from any static host.
+A static site with a small build step for the newsletter archive and blog. `index.html` is the homepage; `npm run build` copies it and the assets into `dist/` and adds the posts. Vercel runs the build on every push.
+
+## Newsletter and blog posts
+
+Every post is one Markdown file in `content/posts/`, named `YYYY-MM-DD-short-name.md`. The header at the top sets:
+
+```yaml
+---
+title: Hello from ProductHub Victoria
+type: newsletter        # or blog
+issue: 1                # newsletters only
+date: 2026-11-25
+slug: issue-1           # optional; the web address becomes /newsletter/issue-1
+description: One or two sentences for search results and link previews.
+image: /assets/email/fall-event-2026.jpg   # optional; used for link previews
+imageAlt: What the image shows
+author: Michael & Danijel
+tags: [events, community]
+draft: true             # optional; drafts only show on preview links
+---
+```
+
+Below the header, write normal Markdown. Two extras: `![alt](/path.jpg "Caption")` becomes a captioned photo, and a quote whose last line starts with `—` gets that line as its attribution (the first quote in a row is shown as the big navy card). Put images in `assets/posts/`.
+
+The build makes `/newsletter`, `/blog`, a page per post, RSS feeds (`/feed.xml`, `/newsletter/feed.xml`, `/blog/feed.xml`), `sitemap.xml`, `llms.txt` (a summary for AI search tools) and a "From the newsletter and blog" list on the homepage where `index.html` has `<!--LATEST-POSTS-->`. Post pages reuse the homepage's styles, newsletter form, theme toggle and Mixpanel code, so change those in `index.html`.
+
+To preview locally: `npm install`, then `npm run preview` and open http://localhost:4321. Every pull request also gets a Vercel preview link, which shows drafts too.
 
 ## Editing
 
@@ -16,7 +42,7 @@ Brand assets come from the ProductHub brand library (Poppins, navy/ocean/sea-gla
 ## Hosting on Vercel
 
 1. Push this folder to a private GitHub repo.
-2. On vercel.com, sign in with GitHub, choose **Add New → Project**, and import the repo. Leave Framework Preset as **Other**, with no build command and the root directory as `./`. Click **Deploy**.
+2. On vercel.com, sign in with GitHub, choose **Add New → Project**, and import the repo. Leave Framework Preset as **Other**; `vercel.json` sets the build command (`npm run build`) and output folder (`dist`). Click **Deploy**.
 3. Every push to `main` redeploys the site automatically. Other branches get their own preview URLs.
 
 ### Custom domain
