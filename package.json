@@ -1,0 +1,16 @@
+{
+  "name": "producthub-website",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "preview": "node scripts/build.mjs --drafts && node scripts/serve.mjs"
+  },
+  "dependencies": {
+    "gray-matter": "4.0.3",
+    "marked": "15.0.12"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
