@@ -87,3 +87,22 @@
 .latest .subhead { margin-bottom: 20px; }
 .latest .section-title { font: 500 var(--step--1)/1 var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-soft); }
 .latest .subhead span { display: inline-flex; gap: 18px; }
+
+/* Resources page: briefs and take-homes */
+.res-list { display: grid; gap: 24px; }
+.res-card { display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 28px; align-items: start; padding: 24px; background: var(--surface); border: 1px solid var(--line-strong); }
+.res-thumb { display: block; border: 1px solid var(--line-strong); background: #fff; box-shadow: 0 10px 30px -18px rgba(6, 17, 31, .5); transition: transform .15s ease; }
+.res-thumb:hover { transform: translateY(-2px); }
+.res-thumb img { display: block; width: 100%; height: auto; }
+.res-body { display: grid; gap: 8px; min-width: 0; }
+.res-body .kind { font: 500 var(--step--1)/1.2 var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--accent-text); }
+.res-body h3 { font-size: 1.6rem; font-weight: 500; line-height: 1.2; letter-spacing: -0.02em; }
+.res-body .meta { font: 400 0.8rem/1.5 var(--mono); color: var(--ink-faint); letter-spacing: .02em; }
+.res-body .summary { color: var(--ink-soft); max-width: 58ch; }
+.res-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 22px; margin-top: 10px; }
+.res-related { font: 500 var(--step--1)/1 var(--mono); letter-spacing: .1em; text-transform: uppercase; text-decoration: none; }
+@media (max-width: 640px) { .res-card { grid-template-columns: 1fr; gap: 20px; padding: 18px; } .res-thumb { max-width: 220px; } }
+
+/* A download button inside a post */
+.prose a.btn { color: var(--on-coral); text-decoration: none; }
+.prose .download { margin-top: 1.4em; }

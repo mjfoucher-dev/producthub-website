@@ -7,6 +7,10 @@
    draft: true posts only appear on Vercel preview links and `npm run preview`.
 
    Output: /newsletter, /blog, one page per post, RSS feeds, sitemap.xml and llms.txt.
+
+   Resources (handouts and briefs from our sessions) live in content/resources/*.md,
+   front matter only: title, kind, date, session, description, file, thumb, related, relatedLabel.
+   The files themselves go in /resources. They are listed at /resources, newest first.
    The homepage gets a "Latest" section where index.html has <!--LATEST-POSTS-->. */
 
 import fs from "node:fs";
@@ -18,6 +22,7 @@ import { marked } from "marked";
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const OUT = path.join(ROOT, "dist");
 const POSTS_DIR = path.join(ROOT, "content", "posts");
+const RESOURCES_DIR = path.join(ROOT, "content", "resources");
 const SITE = "https://producthub.info";
 const SITE_NAME = "ProductHub Victoria";
 const SHOW_DRAFTS = process.argv.includes("--drafts") || process.env.VERCEL_ENV === "preview";
@@ -117,6 +122,23 @@ function loadPosts() {
   return posts.sort((a, b) => b.date - a.date || (b.issue || 0) - (a.issue || 0));
 }
 
+/* ---------- load resources ---------- */
+
+function loadResources() {
+  if (!fs.existsSync(RESOURCES_DIR)) return [];
+  const list = [];
+  for (const file of fs.readdirSync(RESOURCES_DIR).filter(f => f.endsWith(".md")).sort()) {
+    const { data } = matter(fs.readFileSync(path.join(RESOURCES_DIR, file), "utf8"));
+    const where = `content/resources/${file}`;
+    for (const k of ["title", "date", "file"]) if (!data[k]) throw new Error(`${where}: add a ${k}`);
+    const local = path.join(ROOT, String(data.file).replace(/^\//, ""));
+    if (!/^https?:/.test(data.file) && !fs.existsSync(local)) throw new Error(`${where}: file ${data.file} not found; put it in /resources`);
+    if (data.draft && !SHOW_DRAFTS) continue;
+    list.push({ ...data, date: toDate(data.date), id: file.replace(/\.md$/, "").replace(/^\d{4}-\d{2}-\d{2}-/, "") });
+  }
+  return list.sort((a, b) => b.date - a.date);
+}
+
 /* ---------- shared page pieces, taken from index.html so the look stays in sync ---------- */
 
 const indexHtml = fs.readFileSync(path.join(ROOT, "index.html"), "utf8");
@@ -183,6 +205,7 @@ function header(active) {
       ${link("/#slack", "Slack")}
       ${link("/newsletter", "Newsletter", "newsletter")}
       ${link("/blog", "Blog", "blog")}
+      ${link("/resources", "Resources", "resources")}
       <div class="theme" role="group" aria-label="Colour theme">
         <button type="button" data-theme-choice="auto" aria-pressed="true">Auto</button>
         <button type="button" data-theme-choice="light" aria-pressed="false">Light</button>
@@ -206,6 +229,7 @@ function footer() {
       <a href="/#slack">Slack</a>
       <a href="/newsletter">Newsletter</a>
       <a href="/blog">Blog</a>
+      <a href="/resources">Resources</a>
       <a href="/feed.xml">RSS</a>
       <button type="button" class="linkish" id="analytics-settings">Analytics</button>
     </nav>
@@ -346,6 +370,52 @@ function listPage(typeKey, posts) {
 </main>` + footer();
 }
 
+const RESOURCES_INTRO = "Briefs, checklists and other take-homes from ProductHub Victoria sessions. Each one fits on a page or two, and you're welcome to share them.";
+
+function resourceCard(r) {
+  const ext = (String(r.file).split(".").pop() || "").toUpperCase();
+  return `<article class="res-card" id="${esc(r.id)}">
+      ${r.thumb ? `<a class="res-thumb" href="${esc(r.file)}" target="_blank" rel="noopener" aria-hidden="true" tabindex="-1"><img src="${esc(r.thumb)}" alt="" loading="lazy"></a>` : ""}
+      <div class="res-body">
+        <span class="kind">${esc(r.kind || "Resource")}${r.draft ? ' <b class="draft-tag">Draft</b>' : ""}</span>
+        <h3>${esc(r.title)}</h3>
+        <p class="meta">${r.session ? esc(r.session) + " · " : ""}${fmtDate(r.date)}</p>
+        ${r.description ? `<p class="summary">${esc(r.description)}</p>` : ""}
+        <div class="res-actions">
+          <a class="btn btn-coral" href="${esc(r.file)}" target="_blank" rel="noopener">Download${ext ? " " + esc(ext) : ""}</a>
+          ${r.related ? `<a class="res-related" href="${esc(r.related)}">${esc(r.relatedLabel || "Read more")} →</a>` : ""}
+        </div>
+      </div>
+    </article>`;
+}
+
+function resourcesPage(list) {
+  const jsonld = {
+    "@context": "https://schema.org", "@type": "CollectionPage", name: `${SITE_NAME} resources`, description: RESOURCES_INTRO, url: abs("/resources"),
+    hasPart: list.filter(r => !r.draft).map(r => ({ "@type": "DigitalDocument", name: r.title, url: abs(r.file), datePublished: r.date.toISOString() }))
+  };
+  return head({ title: "Resources", description: RESOURCES_INTRO, url: "/resources", jsonld })
+    + header("resources") + `
+<main id="top">
+  <header class="post-hero list-hero">
+    <div class="wrap narrow">
+      <span class="eyebrow">Resources</span>
+      <h1>Take-homes from the room.</h1>
+      <p class="lede">${esc(RESOURCES_INTRO)}</p>
+    </div>
+  </header>
+  <section class="band list-band" aria-label="Resources">
+    <div class="wrap narrow">
+      <div class="res-list">
+    ${list.length ? list.map(resourceCard).join("\n    ") : `<div class="empty">The first brief is on its way.</div>`}
+      </div>
+    </div>
+  </section>
+
+  ${NEWSLETTER_SECTION}
+</main>` + footer();
+}
+
 function latestSection(posts) {
   if (!posts.length) return "";
   return `<section class="band latest" id="latest" aria-labelledby="latest-title">
@@ -387,6 +457,7 @@ function rss({ title, description, url, feedUrl, posts }) {
 function sitemap(posts) {
   const urls = [
     { loc: SITE + "/", lastmod: posts[0] && isoDate(posts[0].updated) },
+    { loc: abs("/resources") },
     ...Object.values(TYPES).map(t => ({ loc: abs("/" + t.path), lastmod: (posts.find(p => p.typeInfo === t) || {}).updated })),
     ...posts.map(p => ({ loc: abs(p.url), lastmod: p.updated }))
   ];
@@ -406,6 +477,7 @@ function llms(posts) {
 - [Home](${SITE}/): what we do, upcoming events, founders, Slack and newsletter sign-up
 - [Newsletter archive](${SITE}/newsletter)
 - [Blog](${SITE}/blog)
+- [Resources](${SITE}/resources): briefs and take-homes from our sessions
 
 ## Newsletter
 
@@ -436,6 +508,8 @@ for (const key of Object.keys(TYPES)) {
   write(`${TYPES[key].path}/index.html`, listPage(key, list));
   write(`${TYPES[key].path}/feed.xml`, rss({ title: `${SITE_NAME} ${TYPES[key].label}`, description: TYPES[key].intro, url: "/" + TYPES[key].path, feedUrl: `/${TYPES[key].path}/feed.xml`, posts: list.filter(p => !p.draft) }));
 }
+const resources = loadResources();
+write("resources/index.html", resourcesPage(resources));
 write("feed.xml", rss({ title: SITE_NAME, description: "The ProductHub Victoria newsletter and blog.", url: "/", feedUrl: "/feed.xml", posts: live }));
 write("sitemap.xml", sitemap(live));
 write("llms.txt", llms(live));
@@ -445,4 +519,5 @@ let home = indexHtml.replace("<!--LATEST-POSTS-->", latestSection(posts))
   .replace("</head>", `<link rel="stylesheet" href="/assets/posts.css">\n${FEEDS_HEAD}\n</head>`);
 write("index.html", home);
 
+console.log(`Built ${resources.length} resource(s) at /resources`);
 console.log(`Built ${posts.length} post(s)${SHOW_DRAFTS ? " (drafts included)" : ""}: ${posts.map(p => p.url + (p.draft ? " [draft]" : "")).join(", ") || "none"}`);
