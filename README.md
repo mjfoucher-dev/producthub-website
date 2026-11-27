@@ -4,7 +4,7 @@ A static site with a small build step for the newsletter archive and blog. `inde
 
 ## Newsletter and blog posts
 
-Every post is one Markdown file in `content/posts/`, named `YYYY-MM-DD-short-name.md`. The header at the top sets:
+The easiest way to write one is the web editor at **producthub.info/admin** (see [Web editor](#web-editor) below). Under the hood, every post is one Markdown file in `content/posts/`, named after its web address: `issue-2.md` becomes `/newsletter/issue-2`, `why-we-stay-small.md` becomes `/blog/why-we-stay-small`. (Older names with a `YYYY-MM-DD-` prefix still work; the prefix is dropped from the address.) The header at the top sets:
 
 ```yaml
 ---
@@ -12,7 +12,7 @@ title: Hello from ProductHub Victoria
 type: newsletter        # or blog
 issue: 1                # newsletters only
 date: 2026-11-25
-slug: issue-1           # optional; the web address becomes /newsletter/issue-1
+slug: issue-1           # optional; overrides the file name in the web address
 description: One or two sentences for search results and link previews.
 image: /assets/email/fall-event-2026.jpg   # optional; used for link previews
 imageAlt: What the image shows
@@ -27,6 +27,29 @@ Below the header, write normal Markdown. Two extras: `![alt](/path.jpg "Caption"
 The build makes `/newsletter`, `/blog`, a page per post, RSS feeds (`/feed.xml`, `/newsletter/feed.xml`, `/blog/feed.xml`), `sitemap.xml`, `llms.txt` (a summary for AI search tools) and a "From the newsletter and blog" list on the homepage where `index.html` has `<!--LATEST-POSTS-->`. Post pages reuse the homepage's styles, newsletter form, theme toggle and Mixpanel code, so change those in `index.html`.
 
 To preview locally: `npm install`, then `npm run preview` and open http://localhost:4321. Every pull request also gets a Vercel preview link, which shows drafts too.
+
+## Web editor
+
+Michael and Danijel write and publish posts at **https://producthub.info/admin** without touching code. It's [Sveltia CMS](https://sveltiacms.app/docs), a free editor that runs in the browser and saves straight to this GitHub repo. There's no database.
+
+- **Sign in with GitHub.** Anyone whose GitHub account has write access to `mjfoucher-dev/producthub-website` can sign in; nobody else can. To add someone: GitHub repo → Settings → Collaborators → Add people.
+- **Nothing goes live until you press Publish.** Saving a post creates a pull request. Vercel builds a preview of the whole site with the post in it, and the editor shows a preview link once it's ready (about a minute). Move the post from Draft → In Review → Ready on the **Workflow** page, then press **Publish**, which merges the pull request. The live site updates about a minute later.
+- **Pictures** you upload go into `assets/posts/`.
+- **Quotes:** to credit a quote, press Shift+Enter at the end of it and start the new line with an em dash (—).
+- **Sending the newsletter email** still happens in Kit; the editor only puts the issue on the website.
+
+### How sign-in works
+
+`admin/index.html` loads the editor from unpkg (version 5.x) and `admin/config.yml` describes the Newsletter and Blog collections. `admin/preview.css` makes the preview pane look like the site. Sign-in goes through our own Vercel function, `api/auth.mjs`, which talks to a GitHub OAuth app:
+
+| Where | What |
+|---|---|
+| GitHub → Settings → Developer settings → OAuth Apps → **ProductHub Victoria editor** | Homepage URL `https://producthub.info`, Authorization callback URL `https://producthub.info/api/auth` |
+| Vercel → producthub-website → Environment Variables (Production) | `GITHUB_OAUTH_CLIENT_ID`, `GITHUB_OAUTH_CLIENT_SECRET`. Redeploy after changing them. |
+
+To check the setup, open `https://producthub.info/api/auth?check`: it shows whether both settings are present (true/false, never the values). Sign-in only works on producthub.info, not on Vercel preview links, because GitHub only sends people back to the callback URL above. If GitHub sign-in ever breaks, the editor's **Sign In Using Access Token** button works with a GitHub personal access token as a fallback.
+
+`/admin` is kept out of search engines (`robots.txt`, a noindex tag and header), the sitemap and Mixpanel.
 
 ## Editing
 

@@ -1,0 +1,96 @@
+# Settings for the ProductHub Victoria editor at producthub.info/admin (Sveltia CMS).
+# Docs: https://sveltiacms.app/docs
+#
+# How publishing works (publish_mode: editorial_workflow):
+#   Save          -> the post is saved as a draft on its own branch and pull request.
+#                    Vercel builds a preview of the whole site with the post in it.
+#   Status        -> move it from Draft to In Review to Ready on the Workflow page.
+#   Publish       -> merges the pull request; Vercel puts it on producthub.info a minute later.
+# Nothing reaches the live site until someone presses Publish.
+
+backend:
+  name: github
+  repo: mjfoucher-dev/producthub-website
+  branch: main
+  # Sign-in runs through our own Vercel function (api/auth.mjs), using the GitHub OAuth app
+  # in Vercel's GITHUB_OAUTH_CLIENT_ID and GITHUB_OAUTH_CLIENT_SECRET settings.
+  # base_url is set to this site's own address in admin/index.html.
+  auth_endpoint: api/auth
+
+publish_mode: editorial_workflow
+
+app_title: ProductHub Victoria editor
+site_url: https://producthub.info
+logo:
+  src: /android-chrome-192.png
+
+media_folder: assets/posts
+public_folder: /assets/posts
+
+slug:
+  encoding: ascii
+  clean_accents: true
+  maxlength: 60
+
+collections:
+  - name: newsletter
+    label: Newsletter
+    label_singular: Newsletter issue
+    description: Every issue appears at producthub.info/newsletter. Send the email itself from Kit.
+    folder: content/posts
+    filter: { field: type, value: newsletter }
+    create: true
+    # The file name, and the web address, is issue-<number>: /newsletter/issue-2
+    slug:
+      template: "issue-{{issue}}"
+      editable: false
+    preview_path: /newsletter/{{slug}}
+    summary: "#{{issue}} · {{title}}"
+    sortable_fields: [date, issue, title]
+    fields:
+      - { name: type, widget: hidden, default: newsletter }
+      - { name: title, label: Title, widget: string }
+      - { name: issue, label: Issue number, widget: number, value_type: int, min: 1 }
+      - { name: date, label: Date, widget: datetime, type: date, format: YYYY-MM-DD, default: "{{now}}",
+          hint: "Issues are listed newest first by this date." }
+      - { name: description, label: Summary, widget: text,
+          hint: "One or two sentences. Shown in the archive, in Google results and in link previews." }
+      - { name: author, label: Author, widget: string, default: Michael & Danijel }
+      - { name: image, label: Link preview image, widget: image, required: false,
+          hint: "Optional. Shown when the issue is shared on LinkedIn or Slack. Landscape, about 1200 x 630." }
+      - { name: imageAlt, label: Image description, widget: string, required: false,
+          hint: "What the image shows, for screen readers." }
+      - { name: tags, label: Tags, widget: list, required: false }
+      - { name: body, label: Issue, widget: richtext,
+          hint: "To credit a quote, press Shift+Enter at the end of it and start the new line with an em dash (—). The first quote in a row becomes the big navy card." }
+
+  - name: blog
+    label: Blog
+    label_singular: Blog post
+    description: Posts appear at producthub.info/blog.
+    folder: content/posts
+    filter: { field: type, value: blog }
+    create: true
+    # The file name is the web address: /blog/why-we-keep-it-small. Pick it when you create
+    # the post; it can't change afterwards, so links people shared keep working.
+    slug:
+      template: "{{title}}"
+      editable: [create]
+    preview_path: /blog/{{slug}}
+    sortable_fields: [date, title, author]
+    fields:
+      - { name: type, widget: hidden, default: blog }
+      - { name: title, label: Title, widget: string }
+      - { name: date, label: Date, widget: datetime, type: date, format: YYYY-MM-DD, default: "{{now}}",
+          hint: "Posts are listed newest first by this date." }
+      - { name: description, label: Summary, widget: text,
+          hint: "One or two sentences. Shown in the blog list, in Google results and in link previews." }
+      - { name: author, label: Author, widget: string, default: Michael Foucher,
+          hint: "For two authors, write “Michael & Danijel”." }
+      - { name: image, label: Link preview image, widget: image, required: false,
+          hint: "Optional. Shown when the post is shared on LinkedIn or Slack. Landscape, about 1200 x 630." }
+      - { name: imageAlt, label: Image description, widget: string, required: false,
+          hint: "What the image shows, for screen readers." }
+      - { name: tags, label: Tags, widget: list, required: false }
+      - { name: body, label: Post, widget: richtext,
+          hint: "To credit a quote, press Shift+Enter at the end of it and start the new line with an em dash (—). The first quote in a row becomes the big navy card." }
