@@ -19,6 +19,7 @@ import { fileURLToPath } from "node:url";
 import matter from "gray-matter";
 import { marked } from "marked";
 import { loadSiteContent, fillIndex } from "./site-content.mjs";
+import { listHero, resourcesList } from "./site-render.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const OUT = path.join(ROOT, "dist");
@@ -58,7 +59,7 @@ const TYPES = {
 
 /* Files and folders that are source, not part of the published site. */
 const SKIP = new Set(["node_modules", "dist", "content", "scripts", "api", ".git", ".github", ".vercel", ".gitignore",
-  ".DS_Store", "package.json", "package-lock.json", "vercel.json", "README.md", ".pages.yml"]);
+  ".DS_Store", "package.json", "package-lock.json", "vercel.json", "README.md", ".pages.yml", "docs"]);
 
 /* ---------- helpers ---------- */
 
@@ -153,7 +154,8 @@ function loadResources() {
 
 /* ---------- shared page pieces, taken from index.html so the look stays in sync ---------- */
 
-const indexHtml = fillIndex(fs.readFileSync(path.join(ROOT, "index.html"), "utf8"), ROOT, CONTENT);
+const INDEX_TEMPLATE = fs.readFileSync(path.join(ROOT, "index.html"), "utf8");
+const indexHtml = fillIndex(INDEX_TEMPLATE, ROOT, CONTENT);
 const BASE_CSS = between(indexHtml, "<style>", "</style>", "the <style> block").slice("<style>".length);
 const NEWSLETTER_SECTION = between(indexHtml, '<section class="newsletter" id="newsletter"', "</main>", "the newsletter section").trim();
 const SCRIPTS = [
@@ -359,17 +361,11 @@ function listPage(typeKey, posts) {
   return head({ title: t.title, description: t.intro, url, jsonld })
     + header(typeKey) + `
 <main id="top">
-  <header class="post-hero list-hero">
-    <div class="wrap narrow">
-      <span class="eyebrow">${t.label}</span>
-      <h1>${esc(t.heading)}</h1>
-      <p class="lede">${esc(t.intro)}</p>
+${listHero({ label: t.label, heading: t.heading, intro: t.intro, actions: `
       <div class="actions">
         <a class="btn btn-coral" href="#newsletter">${typeKey === "newsletter" ? "Subscribe" : "Get new posts by email"}</a>
         <a class="btn btn-ghost" href="/${t.path}/feed.xml">RSS feed</a>
-      </div>
-    </div>
-  </header>
+      </div>` })}
   <section class="band list-band" aria-label="${t.label} posts">
     <div class="wrap narrow">
       <div class="post-list">
@@ -384,22 +380,6 @@ function listPage(typeKey, posts) {
 
 const RESOURCES_INTRO = pageText("resources", "intro");
 
-function resourceCard(r) {
-  const ext = (String(r.file).split(".").pop() || "").toUpperCase();
-  return `<article class="res-card" id="${esc(r.id)}">
-      ${r.thumb ? `<a class="res-thumb" href="${esc(r.file)}" target="_blank" rel="noopener" aria-hidden="true" tabindex="-1"><img src="${esc(r.thumb)}" alt="" loading="lazy"></a>` : ""}
-      <div class="res-body">
-        <span class="kind">${esc(r.kind || "Resource")}${r.draft ? ' <b class="draft-tag">Draft</b>' : ""}</span>
-        <h3>${esc(r.title)}</h3>
-        <p class="meta">${r.session ? esc(r.session) + " · " : ""}${fmtDate(r.date)}</p>
-        ${r.description ? `<p class="summary">${esc(r.description)}</p>` : ""}
-        <div class="res-actions">
-          <a class="btn btn-coral" href="${esc(r.file)}" target="_blank" rel="noopener">Download${ext ? " " + esc(ext) : ""}</a>
-          ${r.related ? `<a class="res-related" href="${esc(r.related)}">${esc(r.relatedLabel || "Read more")} →</a>` : ""}
-        </div>
-      </div>
-    </article>`;
-}
 
 function resourcesPage(list) {
   const jsonld = {
@@ -409,20 +389,8 @@ function resourcesPage(list) {
   return head({ title: "Resources", description: RESOURCES_INTRO, url: "/resources", jsonld })
     + header("resources") + `
 <main id="top">
-  <header class="post-hero list-hero">
-    <div class="wrap narrow">
-      <span class="eyebrow">Resources</span>
-      <h1>${esc(pageText("resources", "heading"))}</h1>
-      <p class="lede">${esc(RESOURCES_INTRO)}</p>
-    </div>
-  </header>
-  <section class="band list-band" aria-label="Resources">
-    <div class="wrap narrow">
-      <div class="res-list">
-    ${list.length ? list.map(resourceCard).join("\n    ") : `<div class="empty">${esc(pageText("resources", "empty"))}</div>`}
-      </div>
-    </div>
-  </section>
+${listHero({ label: "Resources", heading: pageText("resources", "heading"), intro: RESOURCES_INTRO })}
+${resourcesList(list, pageText("resources", "empty"))}
 
   ${NEWSLETTER_SECTION}
 </main>` + footer();
@@ -525,6 +493,17 @@ write("resources/index.html", resourcesPage(resources));
 write("feed.xml", rss({ title: SITE_NAME, description: "The ProductHub Victoria newsletter and blog.", url: "/", feedUrl: "/feed.xml", posts: live }));
 write("sitemap.xml", sitemap(live));
 write("llms.txt", llms(live));
+
+/* Editor previews (admin/admin.js): the same renderer, stylesheet and template the site uses,
+   plus the current text and events, so the preview pane matches the live pages. */
+write("admin/site-render.js", fs.readFileSync(path.join(ROOT, "scripts", "site-render.mjs"), "utf8"));
+write("admin/site.css", `@import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Poppins:wght@400;500;600;700&display=swap");\n${BASE_CSS}\n${fs.readFileSync(path.join(ROOT, "scripts", "posts.css"), "utf8")}`);
+write("admin/site-data.js", `/* Generated by scripts/build.mjs. Don't edit. */
+export const TEMPLATE = ${JSON.stringify(INDEX_TEMPLATE).replace(/<\//g, "<\\/")};
+export const HOME = ${JSON.stringify(CONTENT.home)};
+export const EVENTS = ${JSON.stringify(CONTENT.events)};
+export const ARCHIVES = ${JSON.stringify(ARCHIVES)};
+`);
 
 /* Homepage: add the latest posts, the stylesheet they need, and the feed link. */
 let home = indexHtml.replace("<!--LATEST-POSTS-->", latestSection(posts))
