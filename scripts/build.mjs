@@ -18,6 +18,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import matter from "gray-matter";
 import { marked } from "marked";
+import { loadSiteContent, fillIndex } from "./site-content.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const OUT = path.join(ROOT, "dist");
@@ -27,22 +28,31 @@ const SITE = "https://producthub.info";
 const SITE_NAME = "ProductHub Victoria";
 const SHOW_DRAFTS = process.argv.includes("--drafts") || process.env.VERCEL_ENV === "preview";
 
+/* Page text (headings, intros) comes from content/pages/*.yml, edited in the web editor. */
+const CONTENT = loadSiteContent(ROOT);
+const ARCHIVES = CONTENT.archives;
+const pageText = (key, field) => {
+  const v = ARCHIVES[key] && ARCHIVES[key][field];
+  if (!v) throw new Error(`content/pages/archives.yml: add ${key}.${field}`);
+  return String(v).trim();
+};
+
 const TYPES = {
   newsletter: {
     path: "newsletter",
     label: "Newsletter",
-    title: "Newsletter archive",
-    heading: "Every issue, in one place.",
-    intro: "A short, curated email for Island product makers: what we're reading, using and arguing about, plus what's coming up at ProductHub Victoria. Here's every issue we've sent.",
-    empty: "The first issue is on its way. Subscribe below and it lands in your inbox."
+    title: pageText("newsletter", "title"),
+    heading: pageText("newsletter", "heading"),
+    intro: pageText("newsletter", "intro"),
+    empty: pageText("newsletter", "empty")
   },
   blog: {
     path: "blog",
     label: "Blog",
-    title: "Blog",
-    heading: "Notes from the room.",
-    intro: "Longer pieces from ProductHub Victoria: what we learned at gatherings, how we run things, and the real work Island product people are doing.",
-    empty: "Our first articles are being written. Subscribe to the newsletter and you'll hear when they're up."
+    title: pageText("blog", "title"),
+    heading: pageText("blog", "heading"),
+    intro: pageText("blog", "intro"),
+    empty: pageText("blog", "empty")
   }
 };
 
@@ -143,7 +153,7 @@ function loadResources() {
 
 /* ---------- shared page pieces, taken from index.html so the look stays in sync ---------- */
 
-const indexHtml = fs.readFileSync(path.join(ROOT, "index.html"), "utf8");
+const indexHtml = fillIndex(fs.readFileSync(path.join(ROOT, "index.html"), "utf8"), ROOT, CONTENT);
 const BASE_CSS = between(indexHtml, "<style>", "</style>", "the <style> block").slice("<style>".length);
 const NEWSLETTER_SECTION = between(indexHtml, '<section class="newsletter" id="newsletter"', "</main>", "the newsletter section").trim();
 const SCRIPTS = [
@@ -372,7 +382,7 @@ function listPage(typeKey, posts) {
 </main>` + footer();
 }
 
-const RESOURCES_INTRO = "Briefs, checklists and other take-homes from ProductHub Victoria sessions. Each one fits on a page or two, and you're welcome to share them.";
+const RESOURCES_INTRO = pageText("resources", "intro");
 
 function resourceCard(r) {
   const ext = (String(r.file).split(".").pop() || "").toUpperCase();
@@ -402,14 +412,14 @@ function resourcesPage(list) {
   <header class="post-hero list-hero">
     <div class="wrap narrow">
       <span class="eyebrow">Resources</span>
-      <h1>Take-homes from the room.</h1>
+      <h1>${esc(pageText("resources", "heading"))}</h1>
       <p class="lede">${esc(RESOURCES_INTRO)}</p>
     </div>
   </header>
   <section class="band list-band" aria-label="Resources">
     <div class="wrap narrow">
       <div class="res-list">
-    ${list.length ? list.map(resourceCard).join("\n    ") : `<div class="empty">The first brief is on its way.</div>`}
+    ${list.length ? list.map(resourceCard).join("\n    ") : `<div class="empty">${esc(pageText("resources", "empty"))}</div>`}
       </div>
     </div>
   </section>
@@ -422,7 +432,7 @@ function latestSection(posts) {
   if (!posts.length) return "";
   return `<section class="band latest" id="latest" aria-labelledby="latest-title">
     <div class="wrap">
-      <div class="subhead"><h2 id="latest-title" class="section-title">From the newsletter and blog</h2><span><a href="/newsletter">All issues →</a> &nbsp; <a href="/blog">Blog →</a></span></div>
+      <div class="subhead"><h2 id="latest-title" class="section-title">${esc(CONTENT.home.latest && CONTENT.home.latest.heading || "From the newsletter and blog")}</h2><span><a href="/newsletter">All issues →</a> &nbsp; <a href="/blog">Blog →</a></span></div>
       <div class="post-list">
     ${posts.slice(0, 3).map(p => postRow(p, { showType: true })).join("\n    ")}
       </div>

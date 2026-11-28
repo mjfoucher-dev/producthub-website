@@ -1,0 +1,15 @@
+# Text at the top of the Newsletter, Blog and Resources pages. Edit in the web editor (Pages).
+newsletter:
+  title: Newsletter archive
+  heading: Every issue, in one place.
+  intro: "A short, curated email for Island product makers: what we're reading, using and arguing about, plus what's coming up at ProductHub Victoria. Here's every issue we've sent."
+  empty: The first issue is on its way. Subscribe below and it lands in your inbox.
+blog:
+  title: Blog
+  heading: Notes from the room.
+  intro: "Longer pieces from ProductHub Victoria: what we learned at gatherings, how we run things, and the real work Island product people are doing."
+  empty: Our first articles are being written. Subscribe to the newsletter and you'll hear when they're up.
+resources:
+  heading: Take-homes from the room.
+  intro: Briefs, checklists and other take-homes from ProductHub Victoria sessions. Each one fits on a page or two, and you're welcome to share them.
+  empty: The first brief is on its way.
