@@ -38,18 +38,7 @@ Michael and Danijel write and publish posts at **https://producthub.info/admin**
 - **Quotes:** to credit a quote, press Shift+Enter at the end of it and start the new line with an em dash (—).
 - **Sending the newsletter email** still happens in Kit; the editor only puts the issue on the website.
 
-### How sign-in works
-
-`admin/index.html` loads the editor from unpkg (version 5.x) and `admin/config.yml` describes the Newsletter and Blog collections. `admin/preview.css` makes the preview pane look like the site. Sign-in goes through our own Vercel function, `api/auth.mjs`, which talks to a GitHub OAuth app:
-
-| Where | What |
-|---|---|
-| GitHub → Settings → Developer settings → OAuth Apps → **ProductHub Victoria editor** | Homepage URL `https://producthub.info`, Authorization callback URL `https://producthub.info/api/auth` |
-| Vercel → producthub-website → Environment Variables (Production) | `GITHUB_OAUTH_CLIENT_ID`, `GITHUB_OAUTH_CLIENT_SECRET`. Redeploy after changing them. |
-
-To check the setup, open `https://producthub.info/api/auth?check`: it shows whether both settings are present (true/false, never the values). Sign-in only works on producthub.info, not on Vercel preview links, because GitHub only sends people back to the callback URL above. If GitHub sign-in ever breaks, the editor's **Sign In Using Access Token** button works with a GitHub personal access token as a fallback.
-
-`/admin` is kept out of search engines (`robots.txt`, a noindex tag and header), the sitemap and Mixpanel.
+**How it's all wired up** (content files, preview pane, sign-in, and what to change when the design changes): see [docs/CMS.md](docs/CMS.md).
 
 ## Editing
 
@@ -63,7 +52,7 @@ Almost all the words on the site live in content files, so they can be changed i
 | `content/resources/*.md` | Briefs and take-homes at /resources; the files themselves go in `/resources` | Resources |
 | `content/posts/*.md` | Newsletter issues and blog posts | Newsletter, Blog |
 
-`index.html` keeps the layout, styles and scripts, with placeholders like `{{t:hero.title}}` where the words go. `scripts/site-content.mjs` fills them in at build time; its header lists the placeholder kinds. In text fields, `**bold**`, `*italic*` and `[links](https://…)` work, and in the homepage headline `*words*` get the coral highlight.
+`index.html` keeps the layout, styles and scripts, with placeholders like `{{t:hero.title}}` where the words go. `scripts/site-render.mjs` fills them in at build time; its header lists the placeholder kinds. Full guide: [docs/CMS.md](docs/CMS.md). In text fields, `**bold**`, `*italic*` and `[links](https://…)` work, and in the homepage headline `*words*` get the coral highlight.
 
 Still in code: navigation and button links, form labels, and the `NEWSLETTER` (Kit) and `ANALYTICS` (Mixpanel) settings at the top of the `<script>` block in `index.html`.
 

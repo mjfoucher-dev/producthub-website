@@ -109,7 +109,6 @@ collections:
     preview_path: /#events
     summary: "{{start | date('YYYY-MM-DD')}} · {{title}}"
     sortable_fields: [start, title]
-    editor: { preview: false }
     fields:
       - { name: title, label: Title, widget: string }
       - { name: start, label: Starts, widget: datetime, format: "YYYY-MM-DDTHH:mm:ssZ",
@@ -140,7 +139,6 @@ collections:
       editable: [create]
     preview_path: /resources
     sortable_fields: [date, title]
-    editor: { preview: false }
     media_folder: /resources
     public_folder: /resources
     fields:
@@ -157,7 +155,6 @@ collections:
   - name: pages
     label: Pages
     description: The words on the homepage and at the top of the Newsletter, Blog and Resources pages. The layout and colours stay as they are.
-    editor: { preview: false }
     files:
       - name: home
         label: Homepage

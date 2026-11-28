@@ -9,15 +9,11 @@
 <link rel="cms-config-url" type="application/yaml" href="/admin/config.yml">
 </head>
 <body>
-<!-- Sveltia CMS: the web editor for the newsletter and blog. Settings are in config.yml next to
-     this file; the preview pane is styled by preview.css. Sign-in goes through api/auth.mjs.
-     No analytics on this page on purpose. -->
+<!-- Sveltia CMS: the web editor for the whole site. Settings are in config.yml next to this file;
+     admin.js sets up the preview pane and starts the editor. Sign-in goes through api/auth.mjs.
+     How it all fits together: docs/CMS.md. No analytics on this page on purpose. -->
 <script>window.CMS_MANUAL_INIT = true;</script>
 <script src="https://unpkg.com/@sveltia/cms@5/dist/sveltia-cms.js"></script>
-<script>
-  CMS.registerPreviewStyle("/admin/preview.css");
-  /* Sign in through this same site's /api/auth, so the GitHub popup and the editor share an origin. */
-  CMS.init({ config: { backend: { base_url: location.origin } } });
-</script>
+<script type="module" src="/admin/admin.js"></script>
 </body>
 </html>
