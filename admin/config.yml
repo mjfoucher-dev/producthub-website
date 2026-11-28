@@ -94,3 +94,196 @@ collections:
       - { name: tags, label: Tags, widget: list, required: false }
       - { name: body, label: Post, widget: richtext,
           hint: "To credit a quote, press Shift+Enter at the end of it and start the new line with an em dash (—). The first quote in a row becomes the big navy card." }
+
+  - name: events
+    label: Events
+    label_singular: Event
+    description: Gatherings on the homepage. Each one moves from Upcoming to Past by itself once it ends. RSVPs happen on Luma.
+    folder: content/events
+    format: yaml
+    extension: yml
+    create: true
+    slug:
+      template: "{{start | date('YYYY-MM-DD')}}-{{title}}"
+      editable: false
+    preview_path: /#events
+    summary: "{{start | date('YYYY-MM-DD')}} · {{title}}"
+    sortable_fields: [start, title]
+    editor: { preview: false }
+    fields:
+      - { name: title, label: Title, widget: string }
+      - { name: start, label: Starts, widget: datetime, format: "YYYY-MM-DDTHH:mm:ssZ",
+          hint: "In your computer's time zone (Victoria time for Michael and Danijel)." }
+      - { name: end, label: Ends, widget: datetime, format: "YYYY-MM-DDTHH:mm:ssZ", required: false }
+      - { name: venue, label: Venue, widget: string, hint: "Street address. The homepage adds “, Victoria” after it." }
+      - { name: summary, label: Summary, widget: text }
+      - name: agenda
+        label: Agenda
+        label_singular: Agenda item
+        widget: list
+        required: false
+        summary: "{{time}} {{item}}"
+        hint: Shown in the “Next gathering” box at the top of the homepage.
+        fields:
+          - { name: time, label: Time, widget: string, hint: "Like 6:00" }
+          - { name: item, label: What happens, widget: string }
+      - { name: luma, label: Luma link, widget: string, hint: "The event page on luma.com, where people RSVP." }
+
+  - name: resources
+    label: Resources
+    label_singular: Resource
+    description: Briefs and take-homes listed at producthub.info/resources.
+    folder: content/resources
+    create: true
+    slug:
+      template: "{{date | date('YYYY-MM-DD')}}-{{title}}"
+      editable: [create]
+    preview_path: /resources
+    sortable_fields: [date, title]
+    editor: { preview: false }
+    media_folder: /resources
+    public_folder: /resources
+    fields:
+      - { name: title, label: Title, widget: string }
+      - { name: kind, label: Label, widget: string, required: false, hint: "Small label above the title, like “Product brief 02”." }
+      - { name: date, label: Date, widget: datetime, type: date, format: YYYY-MM-DD, default: "{{now}}" }
+      - { name: session, label: From the session, widget: string, required: false, hint: "Like “Fall Event 2026”." }
+      - { name: description, label: Summary, widget: text }
+      - { name: file, label: File, widget: file, hint: "The PDF (or other file) people download." }
+      - { name: thumb, label: Cover image, widget: image, required: false, hint: "A picture of the first page." }
+      - { name: related, label: Related link, widget: string, required: false, hint: "Optional. A page on this site, like /newsletter/issue-1." }
+      - { name: relatedLabel, label: Related link text, widget: string, required: false }
+
+  - name: pages
+    label: Pages
+    description: The words on the homepage and at the top of the Newsletter, Blog and Resources pages. The layout and colours stay as they are.
+    editor: { preview: false }
+    files:
+      - name: home
+        label: Homepage
+        file: content/pages/home.yml
+        preview_path: /
+        fields:
+          - name: hero
+            label: Top of the page
+            widget: object
+            fields:
+              - { name: eyebrow, label: Small label, widget: string }
+              - { name: title, label: Headline, widget: string, hint: 'Wrap words in asterisks to show them in coral, like: A room for the people who \*ship software\* on Vancouver Island.' }
+              - { name: lede, label: Intro, widget: text }
+              - { name: primaryButton, label: Coral button text, widget: string, hint: "Goes to the newsletter sign-up." }
+              - { name: secondaryButton, label: Outline button text, widget: string, hint: "Goes to What we do." }
+          - name: whatWeDo
+            label: What we do
+            widget: object
+            fields:
+              - { name: eyebrow, label: Small label, widget: string }
+              - { name: heading, label: Heading, widget: string }
+              - { name: statement, label: Statement, widget: text, hint: 'Wrap words in two asterisks to make them bold, like \*\*in small groups\*\*.' }
+              - { name: promiseLabel, label: Promise label, widget: string }
+              - { name: promise, label: Promise, widget: text }
+              - name: values
+                label: Values
+                label_singular: Value
+                widget: list
+                summary: "{{title}}"
+                fields:
+                  - { name: title, label: Value, widget: string }
+                  - { name: text, label: What it means, widget: text }
+                  - { name: notHere, label: "“Not here” list", widget: string, required: false }
+          - name: events
+            label: Events section
+            widget: object
+            hint: The events themselves are in Events.
+            fields:
+              - { name: eyebrow, label: Small label, widget: string }
+              - { name: heading, label: Heading, widget: string }
+              - { name: intro, label: Intro, widget: text }
+              - { name: lumaCalendar, label: Luma calendar link, widget: string }
+              - { name: noUpcoming, label: Text when nothing is scheduled, widget: text }
+              - { name: noPast, label: Text before the first event, widget: text }
+              - { name: noNextTitle, label: Top box heading when nothing is scheduled, widget: string }
+              - { name: noNextText, label: Top box text when nothing is scheduled, widget: string }
+          - name: latest
+            label: Latest posts section
+            widget: object
+            fields:
+              - { name: heading, label: Heading, widget: string }
+          - name: founders
+            label: Founders
+            widget: object
+            fields:
+              - { name: eyebrow, label: Small label, widget: string }
+              - { name: heading, label: Heading, widget: string }
+              - name: people
+                label: People
+                label_singular: Person
+                widget: list
+                summary: "{{name}}"
+                fields:
+                  - { name: name, label: Name, widget: string }
+                  - { name: role, label: Role, widget: string }
+                  - { name: photo, label: Photo, widget: image, media_folder: /assets/founders, public_folder: /assets/founders, hint: "Square works best. It's shown in black and white." }
+                  - { name: bio, label: Bio, widget: text }
+                  - { name: linkedin, label: LinkedIn link, widget: string, required: false }
+                  - { name: email, label: Email address, widget: string, required: false }
+                  - { name: emailLabel, label: Email link text, widget: string, required: false, hint: "Like “Email Michael”." }
+          - name: slack
+            label: Slack
+            widget: object
+            fields:
+              - { name: eyebrow, label: Small label, widget: string }
+              - { name: heading, label: Heading, widget: string }
+              - { name: intro, label: Intro, widget: text }
+              - { name: steps, label: Steps, label_singular: Step, widget: list, hint: "Numbered 01, 02, 03 automatically." }
+              - { name: button, label: Button text, widget: string }
+              - { name: finePrint, label: Fine print, widget: string }
+          - name: newsletter
+            label: Newsletter sign-up
+            widget: object
+            hint: This sign-up box also appears at the bottom of every post.
+            fields:
+              - { name: eyebrow, label: Small label, widget: string }
+              - { name: heading, label: Heading, widget: string }
+              - { name: intro, label: Intro, widget: text }
+              - { name: button, label: Button text, widget: string }
+              - { name: finePrint, label: Fine print, widget: string, hint: "“Read past issues” is added after it." }
+          - name: footer
+            label: Footer
+            widget: object
+            fields:
+              - { name: tagline, label: Tagline, widget: string, hint: "Shown before “© year ProductHub Victoria”." }
+          - name: seo
+            label: Search and sharing
+            widget: object
+            fields:
+              - { name: description, label: Google description, widget: text }
+              - { name: shareDescription, label: Link preview description, widget: text, hint: "Shown when the site is shared on LinkedIn or Slack." }
+      - name: archives
+        label: Newsletter, Blog and Resources pages
+        file: content/pages/archives.yml
+        preview_path: /newsletter
+        fields:
+          - name: newsletter
+            label: Newsletter page
+            widget: object
+            fields:
+              - { name: title, label: Browser tab title, widget: string }
+              - { name: heading, label: Heading, widget: string }
+              - { name: intro, label: Intro, widget: text }
+              - { name: empty, label: Text before the first issue, widget: text }
+          - name: blog
+            label: Blog page
+            widget: object
+            fields:
+              - { name: title, label: Browser tab title, widget: string }
+              - { name: heading, label: Heading, widget: string }
+              - { name: intro, label: Intro, widget: text }
+              - { name: empty, label: Text before the first post, widget: text }
+          - name: resources
+            label: Resources page
+            widget: object
+            fields:
+              - { name: heading, label: Heading, widget: string }
+              - { name: intro, label: Intro, widget: text }
+              - { name: empty, label: Text before the first resource, widget: text }

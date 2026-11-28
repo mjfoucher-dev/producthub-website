@@ -53,14 +53,19 @@ To check the setup, open `https://producthub.info/api/auth?check`: it shows whet
 
 ## Editing
 
-Everything you will change lives at the top of the `<script>` block in `index.html`:
+Almost all the words on the site live in content files, so they can be changed in the web editor at /admin without touching the layout:
 
-- `EVENTS`: one entry per gathering (title, start/end with UTC offset, venue, summary, optional agenda, Luma URL). Events move from Upcoming to Past automatically once they end.
-- `NEWSLETTER`: set `provider` to `buttondown`, `mailchimp` or `substack` and fill in that provider's one setting. Until then the form shows a "sign-up opens shortly" message.
+| File | What | In the editor |
+|---|---|---|
+| `content/pages/home.yml` | Homepage text, values, founders (bios, photos, links), Slack and newsletter sections, footer tagline, Google description | Pages → Homepage |
+| `content/pages/archives.yml` | Headings and intros of /newsletter, /blog and /resources | Pages → Newsletter, Blog and Resources pages |
+| `content/events/*.yml` | One file per gathering (title, start/end, venue, summary, agenda, Luma link). Events move from Upcoming to Past automatically once they end. | Events |
+| `content/resources/*.md` | Briefs and take-homes at /resources; the files themselves go in `/resources` | Resources |
+| `content/posts/*.md` | Newsletter issues and blog posts | Newsletter, Blog |
 
-Founder bios, photos and links are in the `#founders` section of the HTML (remove the `placeholder` class once real text is in).
+`index.html` keeps the layout, styles and scripts, with placeholders like `{{t:hero.title}}` where the words go. `scripts/site-content.mjs` fills them in at build time; its header lists the placeholder kinds. In text fields, `**bold**`, `*italic*` and `[links](https://…)` work, and in the homepage headline `*words*` get the coral highlight.
 
-Brand assets come from the ProductHub brand library (Poppins, navy/ocean/sea-glass/coral palette, gradient logo on white, reverse logo on navy).
+Still in code: navigation and button links, form labels, and the `NEWSLETTER` (Kit) and `ANALYTICS` (Mixpanel) settings at the top of the `<script>` block in `index.html`.
 
 ## Hosting on Vercel
 

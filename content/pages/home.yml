@@ -1,0 +1,80 @@
+# Homepage text. Edit in the web editor at producthub.info/admin (Pages → Homepage).
+# Layout and styling live in index.html; this file only holds the words, links and photos.
+seo:
+  description: A small room for the people who make software products on Vancouver Island. Small gatherings where peers show how they really build, test and ship.
+  shareDescription: A small room for the people who make software products on Vancouver Island.
+hero:
+  eyebrow: Victoria, BC · Vancouver Island
+  title: A room for the people who *ship software* on Vancouver Island.
+  lede: Product managers, designers, engineers, testers and everyone else in the room when it ships. We meet in small groups to show how the work actually gets done.
+  primaryButton: Get the newsletter
+  secondaryButton: What we do
+whatWeDo:
+  eyebrow: What we do
+  heading: Show the real work. Leave with something you can use Monday.
+  statement: We're the people who make software products on Vancouver Island. We get together, **in small groups**, to show each other how the work actually gets done, what's changing, and what we're learning as we go.
+  promiseLabel: What you get
+  promise: A small, trusted room of Island product makers where you'll see how peers really build, test and ship, and go home with something you can use Monday.
+  values:
+    - title: Show the real work, and leave it behind.
+      text: "Share what you actually built and how you actually decided, messy parts included. Every gathering leaves something the group keeps: a workflow, a template, a lesson."
+      notHere: keynotes, vendor pitches, socials with nothing to show for them.
+    - title: Everyone in the room when it ships.
+      text: Product is a team sport. Designers, engineers, testers, support and PMs get the same seat and the same mic.
+      notHere: PM-only circles, seniority hierarchies.
+    - title: Say the true thing.
+      text: What failed matters as much as what worked, especially now, when everyone is pretending they've figured out AI.
+      notHere: hype, humblebragging, sanitized case studies.
+    - title: Small on purpose.
+      text: We'd rather have twenty people who know each other's work than two hundred who don't. Trust is the product.
+      notHere: growth for its own sake.
+    - title: Island first, open door.
+      text: Our members are here. Guests can be from anywhere, as long as they come to share how they work rather than sell what they make.
+      notHere: sponsor-driven programming.
+events:
+  eyebrow: Events
+  heading: Gatherings, upcoming and past
+  intro: Every event lives on Luma. RSVP there so we can plan food, seats and the room.
+  lumaCalendar: https://luma.com/blafreb6
+  noUpcoming: "**The next date is being set.** Subscribe to the newsletter below and you'll hear the moment RSVPs open."
+  noPast: "**Recaps land here after each gathering**, with the notes, templates and lessons the room kept."
+  noNextTitle: Date coming soon
+  noNextText: We meet in small groups every season. Subscribers hear first.
+latest:
+  heading: From the newsletter and blog
+founders:
+  eyebrow: Founders
+  heading: The two people holding the door open
+  people:
+    - name: Michael J Foucher
+      role: Co-founder & host
+      photo: /assets/founders/michael.jpg
+      bio: Michael has spent more than 25 years launching and scaling web, mobile and desktop products, including web browsers, in large enterprises and startups alike. His background spans marketplaces, e-commerce, customer success and agile teams. A UVic economics and MPA grad, he started ProductHub so the people building software on the Island have a room to show how the work really gets done.
+      linkedin: https://www.linkedin.com/in/michaelfoucher
+      email: michael@producthub.info
+      emailLabel: Email Michael
+    - name: Danijel Coric
+      role: Co-founder & host
+      photo: /assets/founders/danijel.jpg
+      bio: "Danijel has more than 18 years of experience leading M&A, integration and transformation programs across private equity, technology platforms, insurance and global fintech. He specializes in technology and product due diligence: finding the value drivers that matter and turning them into plans teams can actually deliver. He co-founded ProductHub to give the Island's product people a place to learn from each other's real work."
+      linkedin: https://www.linkedin.com/in/danijelcoric/
+      email: danijel@producthub.info
+      emailLabel: Email Danijel
+slack:
+  eyebrow: Slack
+  heading: Keep the conversation going between events.
+  intro: A members-only Slack for people who build software on the Island. Share what you're working on, ask the room, and hear about gatherings first.
+  steps:
+    - Tell us a little about what you work on.
+    - A host reviews every request, usually within a few days.
+    - Your invite arrives by email from Slack.
+  button: Request an invite
+  finePrint: "Small on purpose: no recruiters or vendor pitches."
+newsletter:
+  eyebrow: Newsletter
+  heading: The good stuff, picked by people who ship.
+  intro: A short, curated email for Island product makers. We send what we’re reading, using and arguing about, plus what’s coming up at ProductHub Victoria.
+  button: Subscribe
+  finePrint: No spam, no sponsors. Unsubscribe any time.
+footer:
+  tagline: Made on Vancouver Island

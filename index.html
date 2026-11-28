@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>ProductHub Victoria</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<meta name="description" content="A small room for the people who make software products on Vancouver Island. Small gatherings where peers show how they really build, test and ship.">
+<meta name="description" content="{{a:seo.description}}">
 <meta property="og:title" content="ProductHub Victoria">
-<meta property="og:description" content="A small room for the people who make software products on Vancouver Island.">
+<meta property="og:description" content="{{a:seo.shareDescription}}">
 <meta property="og:image" content="assets/og-image.png">
 <meta name="twitter:card" content="summary_large_image">
 <!--HEAD-ASSETS-->
@@ -302,12 +302,12 @@ section { scroll-margin-top: 80px; }
   <section class="hero" aria-labelledby="hero-title">
     <div class="wrap">
       <div>
-        <span class="eyebrow">Victoria, BC · Vancouver Island</span>
-        <h1 id="hero-title">A room for the people who <span class="hl">ship software</span> on Vancouver Island.</h1>
-        <p class="lede">Product managers, designers, engineers, testers and everyone else in the room when it ships. We meet in small groups to show how the work actually gets done.</p>
+        <span class="eyebrow">{{t:hero.eyebrow}}</span>
+        <h1 id="hero-title">{{hl:hero.title}}</h1>
+        <p class="lede">{{t:hero.lede}}</p>
         <div class="actions">
-          <a class="btn btn-coral" href="#newsletter">Get the newsletter</a>
-          <a class="btn btn-ghost" href="#what-we-do">What we do</a>
+          <a class="btn btn-coral" href="#newsletter">{{t:hero.primaryButton}}</a>
+          <a class="btn btn-ghost" href="#what-we-do">{{t:hero.secondaryButton}}</a>
         </div>
       </div>
       <aside class="next" id="next-event" aria-label="Next event"></aside>
@@ -317,20 +317,16 @@ section { scroll-margin-top: 80px; }
   <section class="band" id="what-we-do" aria-labelledby="wwd-title">
     <div class="wrap">
       <div class="section-head">
-        <span class="eyebrow">What we do</span>
-        <h2 id="wwd-title">Show the real work. Leave with something you can use Monday.</h2>
+        <span class="eyebrow">{{t:whatWeDo.eyebrow}}</span>
+        <h2 id="wwd-title">{{t:whatWeDo.heading}}</h2>
       </div>
       <div class="mission">
         <div>
-          <p class="statement">We're the people who make software products on Vancouver Island. We get together, <strong>in small groups</strong>, to show each other how the work actually gets done, what's changing, and what we're learning as we go.</p>
-          <p class="promise"><span>What you get</span>A small, trusted room of Island product makers where you'll see how peers really build, test and ship, and go home with something you can use Monday.</p>
+          <p class="statement">{{t:whatWeDo.statement}}</p>
+          <p class="promise"><span>{{t:whatWeDo.promiseLabel}}</span>{{t:whatWeDo.promise}}</p>
         </div>
         <ul class="values">
-          <li><h3>Show the real work, and leave it behind.</h3><p>Share what you actually built and how you actually decided, messy parts included. Every gathering leaves something the group keeps: a workflow, a template, a lesson.</p><p class="not"><b>Not here</b> keynotes, vendor pitches, socials with nothing to show for them.</p></li>
-          <li><h3>Everyone in the room when it ships.</h3><p>Product is a team sport. Designers, engineers, testers, support and PMs get the same seat and the same mic.</p><p class="not"><b>Not here</b> PM-only circles, seniority hierarchies.</p></li>
-          <li><h3>Say the true thing.</h3><p>What failed matters as much as what worked, especially now, when everyone is pretending they've figured out AI.</p><p class="not"><b>Not here</b> hype, humblebragging, sanitized case studies.</p></li>
-          <li><h3>Small on purpose.</h3><p>We'd rather have twenty people who know each other's work than two hundred who don't. Trust is the product.</p><p class="not"><b>Not here</b> growth for its own sake.</p></li>
-          <li><h3>Island first, open door.</h3><p>Our members are here. Guests can be from anywhere, as long as they come to share how they work rather than sell what they make.</p><p class="not"><b>Not here</b> sponsor-driven programming.</p></li>
+          {{block:values}}
         </ul>
       </div>
     </div>
@@ -339,12 +335,12 @@ section { scroll-margin-top: 80px; }
   <section class="band tint" id="events" aria-labelledby="events-title">
     <div class="wrap">
       <div class="section-head">
-        <span class="eyebrow">Events</span>
-        <h2 id="events-title">Gatherings, upcoming and past</h2>
-        <p>Every event lives on Luma. RSVP there so we can plan food, seats and the room.</p>
+        <span class="eyebrow">{{t:events.eyebrow}}</span>
+        <h2 id="events-title">{{t:events.heading}}</h2>
+        <p>{{t:events.intro}}</p>
       </div>
       <div class="events-block">
-        <div class="subhead"><h3>Upcoming</h3><a id="luma-calendar" href="https://luma.com/blafreb6" rel="noopener" target="_blank">Follow on Luma ↗</a></div>
+        <div class="subhead"><h3>Upcoming</h3><a id="luma-calendar" href="{{a:events.lumaCalendar}}" rel="noopener" target="_blank">Follow on Luma ↗</a></div>
         <div class="events-grid" id="upcoming"></div>
       </div>
       <div class="events-block">
@@ -359,28 +355,11 @@ section { scroll-margin-top: 80px; }
   <section class="band" id="founders" aria-labelledby="founders-title">
     <div class="wrap">
       <div class="section-head">
-        <span class="eyebrow">Founders</span>
-        <h2 id="founders-title">The two people holding the door open</h2>
+        <span class="eyebrow">{{t:founders.eyebrow}}</span>
+        <h2 id="founders-title">{{t:founders.heading}}</h2>
       </div>
       <div class="founders">
-        <article class="founder">
-          <div class="avatar"><img src="assets/founders/michael.jpg" alt="Michael J Foucher" width="400" height="400" loading="lazy"></div>
-          <div>
-            <h3>Michael J Foucher</h3>
-            <p class="role">Co-founder &amp; host</p>
-            <p class="bio">Michael has spent more than 25 years launching and scaling web, mobile and desktop products, including web browsers, in large enterprises and startups alike. His background spans marketplaces, e-commerce, customer success and agile teams. A UVic economics and MPA grad, he started ProductHub so the people building software on the Island have a room to show how the work really gets done.</p>
-            <p class="links"><a href="https://www.linkedin.com/in/michaelfoucher" target="_blank" rel="noopener">LinkedIn ↗</a><a href="mailto:michael@producthub.info">Email Michael ↗</a></p>
-          </div>
-        </article>
-        <article class="founder">
-          <div class="avatar"><img src="assets/founders/danijel.jpg" alt="Danijel Coric" width="332" height="332" loading="lazy"></div>
-          <div>
-            <h3>Danijel Coric</h3>
-            <p class="role">Co-founder &amp; host</p>
-            <p class="bio">Danijel has more than 18 years of experience leading M&amp;A, integration and transformation programs across private equity, technology platforms, insurance and global fintech. He specializes in technology and product due diligence: finding the value drivers that matter and turning them into plans teams can actually deliver. He co-founded ProductHub to give the Island's product people a place to learn from each other's real work.</p>
-            <p class="links"><a href="https://www.linkedin.com/in/danijelcoric/" target="_blank" rel="noopener">LinkedIn ↗</a><a href="mailto:danijel@producthub.info">Email Danijel ↗</a></p>
-          </div>
-        </article>
+        {{block:founders}}
       </div>
     </div>
   </section>
@@ -389,14 +368,12 @@ section { scroll-margin-top: 80px; }
     <div class="wrap">
       <div>
         <div class="section-head">
-          <span class="eyebrow">Slack</span>
-          <h2 id="join-title">Keep the conversation going between events.</h2>
-          <p>A members-only Slack for people who build software on the Island. Share what you're working on, ask the room, and hear about gatherings first.</p>
+          <span class="eyebrow">{{t:slack.eyebrow}}</span>
+          <h2 id="join-title">{{t:slack.heading}}</h2>
+          <p>{{t:slack.intro}}</p>
         </div>
         <ol class="steps">
-          <li><b>01</b><span>Tell us a little about what you work on.</span></li>
-          <li><b>02</b><span>A host reviews every request, usually within a few days.</span></li>
-          <li><b>03</b><span>Your invite arrives by email from Slack.</span></li>
+          {{block:steps}}
         </ol>
       </div>
       <form class="join-form" id="join-form" novalidate>
@@ -411,8 +388,8 @@ section { scroll-margin-top: 80px; }
         </div>
         <div class="hp" aria-hidden="true"><label for="jf-company">Company<input id="jf-company" name="company" tabindex="-1" autocomplete="off"></label></div>
         <div class="foot">
-          <button class="btn btn-coral" type="submit">Request an invite</button>
-          <p class="fine">Small on purpose: no recruiters or vendor pitches.</p>
+          <button class="btn btn-coral" type="submit">{{t:slack.button}}</button>
+          <p class="fine">{{t:slack.finePrint}}</p>
         </div>
         <p class="status" id="jf-status" role="status" aria-live="polite"></p>
       </form>
@@ -422,17 +399,17 @@ section { scroll-margin-top: 80px; }
   <section class="newsletter" id="newsletter" aria-labelledby="nl-title">
     <div class="wrap">
       <div>
-        <span class="eyebrow">Newsletter</span>
-        <h2 id="nl-title">The good stuff, picked by people who ship.</h2>
-        <p>A short, curated email for Island product makers. We send what we&rsquo;re reading, using and arguing about, plus what&rsquo;s coming up at ProductHub Victoria.</p>
+        <span class="eyebrow">{{t:newsletter.eyebrow}}</span>
+        <h2 id="nl-title">{{t:newsletter.heading}}</h2>
+        <p>{{t:newsletter.intro}}</p>
       </div>
       <form class="signup" id="signup" novalidate>
         <label for="nl-email">Your email</label>
         <div class="row">
           <input type="email" id="nl-email" name="email" autocomplete="email" placeholder="you@example.com" required>
-          <button class="btn btn-coral" type="submit">Subscribe</button>
+          <button class="btn btn-coral" type="submit">{{t:newsletter.button}}</button>
         </div>
-        <p class="fine">No spam, no sponsors. Unsubscribe any time. <a href="/newsletter">Read past issues</a></p>
+        <p class="fine">{{t:newsletter.finePrint}} <a href="/newsletter">Read past issues</a></p>
         <p class="status" id="nl-status" role="status" aria-live="polite"></p>
       </form>
     </div>
@@ -450,10 +427,10 @@ section { scroll-margin-top: 80px; }
       <a href="/newsletter">Newsletter</a>
       <a href="/blog">Blog</a>
       <a href="/resources">Resources</a>
-      <a href="https://luma.com/blafreb6" target="_blank" rel="noopener">Luma ↗</a>
+      <a href="{{a:events.lumaCalendar}}" target="_blank" rel="noopener">Luma ↗</a>
       <button type="button" class="linkish" id="analytics-settings">Analytics</button>
     </nav>
-    <p>Made on Vancouver Island · © <span id="year">2026</span> ProductHub Victoria</p>
+    <p>{{t:footer.tagline}} · © <span id="year">2026</span> ProductHub Victoria</p>
   </div>
 </footer>
 
@@ -467,20 +444,10 @@ section { scroll-margin-top: 80px; }
 
 <script>
 /* ===== Edit here ==========================================================
-   EVENTS: add one entry per gathering. Times are local Victoria time with
-   the UTC offset (-07:00 in summer, -08:00 from November to March).
-   An event moves from Upcoming to Past automatically once it has ended.     */
-const EVENTS = [
-  {
-    title: "Fall Event: Harvey AI, up close",
-    start: "2026-11-05T17:00:00-08:00",
-    end:   "2026-11-05T19:30:00-08:00",
-    venue: "525 Fort St, 2nd floor, Suite 201",
-    summary: "An intro and demo of Harvey AI with the people behind it: technical roadmap, data governance and the AI models underneath. Food and drinks provided.",
-    agenda: [["5:00", "Social"], ["6:00", "Harvey AI intro and demo"], ["6:30", "Questions"], ["7:00", "Closing social"]],
-    luma: "https://luma.com/blafreb6"
-  }
-];
+   EVENTS: filled in by the build from content/events/*.yml (edit them in the web
+   editor at /admin → Events). An event moves from Upcoming to Past
+   automatically once it has ended.                                          */
+const EVENTS = {{json:events}};
 
 /* NEWSLETTER: pick a provider and fill in its one setting.
    provider: "" (not connected) | "kit" | "buttondown" | "mailchimp" | "substack" */
@@ -588,10 +555,10 @@ function card(e, isPast) {
 
 document.getElementById("upcoming").innerHTML = upcoming.length
   ? upcoming.map(e => card(e, false)).join("")
-  : `<div class="empty"><strong>The next date is being set.</strong> Subscribe to the newsletter below and you'll hear the moment RSVPs open.</div>`;
+  : `<div class="empty">{{tl:events.noUpcoming}}</div>`;
 document.getElementById("past").innerHTML = past.length
   ? past.map(e => card(e, true)).join("")
-  : `<div class="empty"><strong>Recaps land here after each gathering</strong>, with the notes, templates and lessons the room kept.</div>`;
+  : `<div class="empty">{{tl:events.noPast}}</div>`;
 
 const next = upcoming[0];
 const nextEl = document.getElementById("next-event");
@@ -605,8 +572,8 @@ if (next) {
     <a class="btn btn-coral" href="${esc(next.luma)}" target="_blank" rel="noopener">RSVP on Luma <span class="arrow" aria-hidden="true">↗</span></a>
     <p class="where">${esc(next.venue)}, Victoria</p>`;
 } else {
-  nextEl.innerHTML = `<span class="tag">Next gathering</span><h2>Date coming soon</h2>
-    <p class="when">We meet in small groups every season. Subscribers hear first.</p>
+  nextEl.innerHTML = `<span class="tag">Next gathering</span><h2>{{tl:events.noNextTitle}}</h2>
+    <p class="when">{{tl:events.noNextText}}</p>
     <a class="btn btn-coral" href="#newsletter">Get the newsletter</a>`;
 }
 document.getElementById("year").textContent = now.getFullYear();
