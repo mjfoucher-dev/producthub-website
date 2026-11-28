@@ -80,11 +80,11 @@ const ResourcePreview = htmlPreview(props => {
   return { html: `<main id="top">\n${listHero({ label: "Resources", heading: page.heading, intro: page.intro })}\n${resourcesList(r.title ? [card] : [], page.empty)}\n</main>` };
 });
 
-/* Pages → Newsletter, Blog and Resources pages: the three page headings. */
+/* Pages → Newsletter, Blog, Events and Resources pages: the page headings. */
 const ArchivesPreview = htmlPreview(props => {
   const d = data(props);
   const part = (label, p) => listHero({ label, heading: (p || {}).heading, intro: (p || {}).intro });
-  return { html: `<main id="top">\n${part("Newsletter", d.newsletter)}\n${part("Blog", d.blog)}\n${part("Resources", d.resources)}\n</main>` };
+  return { html: `<main id="top">\n${part("Newsletter", d.newsletter)}\n${part("Blog", d.blog)}\n${part("Events", d.events)}\n${part("Resources", d.resources)}\n</main>` };
 });
 
 /* ---------- start ---------- */

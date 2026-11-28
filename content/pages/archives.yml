@@ -13,3 +13,8 @@ resources:
   heading: Take-homes from the room.
   intro: Briefs, checklists and other take-homes from ProductHub Victoria sessions. Each one fits on a page or two, and you're welcome to share them.
   empty: The first brief is on its way.
+events:
+  title: Events
+  heading: Every gathering, in one place.
+  intro: Small ProductHub Victoria gatherings in Victoria, BC, where Island product people show how they really build, test and ship. RSVPs happen on Luma.
+  empty: The first gathering is being planned. Subscribe to the newsletter and you'll hear the moment RSVPs open.

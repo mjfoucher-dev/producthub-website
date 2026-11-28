@@ -3,13 +3,24 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>ProductHub Victoria</title>
+<title>{{a:seo.title}}</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <meta name="description" content="{{a:seo.description}}">
-<meta property="og:title" content="ProductHub Victoria">
+<link rel="canonical" href="https://producthub.info/">
+<meta property="og:site_name" content="ProductHub Victoria">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://producthub.info/">
+<meta property="og:title" content="{{a:seo.title}}">
 <meta property="og:description" content="{{a:seo.shareDescription}}">
-<meta property="og:image" content="assets/og-image.png">
+<meta property="og:image" content="https://producthub.info/assets/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="ProductHub Victoria logo">
+<meta property="og:locale" content="en_CA">
 <meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{{a:seo.title}}">
+<meta name="twitter:description" content="{{a:seo.shareDescription}}">
+<meta name="twitter:image" content="https://producthub.info/assets/og-image.png">
 <!--HEAD-ASSETS-->
 <link rel="icon" href="favicon.ico" sizes="48x48">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
@@ -182,6 +193,8 @@ section { scroll-margin-top: 80px; }
 .event.past .date .d { color: var(--ink-soft); }
 .event .body { min-width: 0; display: grid; gap: 6px; }
 .event h4 { font-size: 1.35rem; font-weight: 500; line-height: 1.25; }
+.event h4 a, .next h2 a { color: inherit; text-decoration: none; }
+.event h4 a:hover, .next h2 a:hover { text-decoration: underline; text-underline-offset: 0.15em; }
 .event .meta { font: 400 0.82rem/1.5 var(--mono); color: var(--ink-faint); letter-spacing: .02em; }
 .event .summary { color: var(--ink-soft); max-width: 62ch; }
 .event .btn { white-space: nowrap; }
@@ -427,6 +440,7 @@ section { scroll-margin-top: 80px; }
       <a href="/newsletter">Newsletter</a>
       <a href="/blog">Blog</a>
       <a href="/resources">Resources</a>
+      <a href="/about">About</a>
       <a href="{{a:events.lumaCalendar}}" target="_blank" rel="noopener">Luma ↗</a>
       <button type="button" class="linkish" id="analytics-settings">Analytics</button>
     </nav>
@@ -548,7 +562,7 @@ function card(e, isPast) {
   const label = isPast ? "See recap on Luma" : "RSVP on Luma";
   return `<article class="event${isPast ? " past" : ""}">
     <div class="date" aria-hidden="true"><div class="m">${fmt(e.s, { month: "short" }).replace(".", "")}</div><div class="d">${fmt(e.s, { day: "numeric" })}</div><div class="y">${fmt(e.s, { year: "numeric" })}</div></div>
-    <div class="body"><h4>${esc(e.title)}</h4><p class="meta">${esc(whenText(e))} · ${esc(e.venue)}</p><p class="summary">${esc(e.summary)}</p></div>
+    <div class="body"><h4>${e.url ? `<a href="${esc(e.url)}">${esc(e.title)}</a>` : esc(e.title)}</h4><p class="meta">${esc(whenText(e))} · ${esc(e.venue)}</p><p class="summary">${esc(e.summary)}</p></div>
     <a class="btn ${isPast ? "btn-ghost" : "btn-coral"}" href="${esc(e.luma)}" target="_blank" rel="noopener">${label} <span class="arrow" aria-hidden="true">↗</span></a>
   </article>`;
 }
@@ -566,7 +580,7 @@ if (next) {
   nextEl.classList.add("has-event");
   const today = fmt(next.s, { year: "numeric", month: "2-digit", day: "2-digit" }) === fmt(now, { year: "numeric", month: "2-digit", day: "2-digit" });
   nextEl.innerHTML = `<span class="tag">${today ? "Tonight" : "Next gathering"}</span>
-    <h2>${esc(next.title)}</h2>
+    <h2>${next.url ? `<a href="${esc(next.url)}">${esc(next.title)}</a>` : esc(next.title)}</h2>
     <p class="when">${esc(whenText(next))}</p>
     ${next.agenda ? `<ul class="agenda">${next.agenda.map(([t, a]) => `<li><time>${esc(t)}</time><span>${esc(a)}</span></li>`).join("")}</ul>` : ""}
     <a class="btn btn-coral" href="${esc(next.luma)}" target="_blank" rel="noopener">RSVP on Luma <span class="arrow" aria-hidden="true">↗</span></a>

@@ -106,3 +106,18 @@
 /* A download button inside a post */
 .prose a.btn { color: var(--on-coral); text-decoration: none; }
 .prose .download { margin-top: 1.4em; }
+
+/* Event pages (/events/…): facts and agenda */
+.post-hero .actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px; }
+.prose .event-facts, .prose .event-agenda { list-style: none; padding: 0; border-top: 1px solid var(--line); }
+.prose .event-facts li, .prose .event-agenda li { display: grid; grid-template-columns: 6.5rem 1fr; gap: 16px; padding: 12px 0; margin: 0; border-bottom: 1px solid var(--line); }
+.prose .event-facts b, .prose .event-agenda time { font: 500 var(--step--1)/1.9 var(--mono); letter-spacing: .1em; text-transform: uppercase; color: var(--ink-faint); }
+@media (max-width: 480px) { .prose .event-facts li, .prose .event-agenda li { grid-template-columns: 1fr; gap: 4px; } }
+
+/* Resource pages: the cover of the PDF */
+.prose .res-figure img { max-width: 320px; border: 1px solid var(--line); }
+
+/* About page FAQ */
+.prose .faq h3 { margin-top: 1.6em; }
+.res-card h3 a { color: inherit; text-decoration: none; }
+.res-card h3 a:hover { text-decoration: underline; text-underline-offset: 0.15em; }

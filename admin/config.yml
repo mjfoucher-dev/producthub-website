@@ -127,6 +127,12 @@ collections:
           - { name: time, label: Time, widget: string, hint: "Like 6:00" }
           - { name: item, label: What happens, widget: string }
       - { name: luma, label: Luma link, widget: string, hint: "The event page on luma.com, where people RSVP." }
+      - { name: free, label: Free event, widget: boolean, default: true, required: false, hint: "Shown on the event page and told to Google." }
+      - { name: image, label: Photo, widget: image, required: false, media_folder: /assets/posts, public_folder: /assets/posts, hint: "Optional. Shown on the event's page and in link previews." }
+      - { name: imageAlt, label: Photo description, widget: string, required: false }
+      - { name: recap, label: Recap, widget: markdown, required: false, hint: "Optional. After the event: what the room learned. Shows on the event's own page at /events/…" }
+      - { name: related, label: Related link, widget: string, required: false, hint: "Optional. A page on this site, like /newsletter/issue-1." }
+      - { name: relatedLabel, label: Related link text, widget: string, required: false, hint: "Like “Read the recap in Issue #1”." }
 
   - name: resources
     label: Resources
@@ -151,6 +157,7 @@ collections:
       - { name: thumb, label: Cover image, widget: image, required: false, hint: "A picture of the first page." }
       - { name: related, label: Related link, widget: string, required: false, hint: "Optional. A page on this site, like /newsletter/issue-1." }
       - { name: relatedLabel, label: Related link text, widget: string, required: false }
+      - { name: body, label: Summary page, widget: markdown, required: false, hint: "Optional but recommended: the key points in words, shown on the resource's own page (/resources/…). Google and AI search read this; they can't read a PDF well." }
 
   - name: pages
     label: Pages
@@ -254,10 +261,35 @@ collections:
             label: Search and sharing
             widget: object
             fields:
+              - { name: title, label: Browser tab and Google title, widget: string, hint: "Keep it under about 60 characters, with the words people search for." }
               - { name: description, label: Google description, widget: text }
               - { name: shareDescription, label: Link preview description, widget: text, hint: "Shown when the site is shared on LinkedIn or Slack." }
+      - name: about
+        label: About page
+        file: content/pages/about.yml
+        preview_path: /about
+        fields:
+          - { name: title, label: Browser tab and Google title, widget: string }
+          - { name: description, label: Google description, widget: text }
+          - { name: heading, label: Heading, widget: string }
+          - { name: intro, label: Intro, widget: text }
+          - name: sections
+            label: Sections
+            label_singular: Section
+            widget: list
+            fields:
+              - { name: heading, label: Heading, widget: string }
+              - { name: text, label: Text, widget: text, hint: 'Links work like [text](https://…).' }
+          - name: faq
+            label: Questions and answers
+            label_singular: Question
+            widget: list
+            hint: Also given to Google and AI search tools as an FAQ. Start each answer with the direct answer.
+            fields:
+              - { name: q, label: Question, widget: string }
+              - { name: a, label: Answer, widget: text, hint: 'Links work like [text](https://…).' }
       - name: archives
-        label: Newsletter, Blog and Resources pages
+        label: Newsletter, Blog, Events and Resources pages
         file: content/pages/archives.yml
         preview_path: /newsletter
         fields:
@@ -277,6 +309,14 @@ collections:
               - { name: heading, label: Heading, widget: string }
               - { name: intro, label: Intro, widget: text }
               - { name: empty, label: Text before the first post, widget: text }
+          - name: events
+            label: Events page (/events)
+            widget: object
+            fields:
+              - { name: title, label: Browser tab title, widget: string }
+              - { name: heading, label: Heading, widget: string }
+              - { name: intro, label: Intro, widget: text }
+              - { name: empty, label: Text before the first event, widget: text }
           - name: resources
             label: Resources page
             widget: object
