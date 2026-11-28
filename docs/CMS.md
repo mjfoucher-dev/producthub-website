@@ -25,10 +25,13 @@ Sending the newsletter email still happens in Kit. The editor only puts the issu
 | On the site | Content file | Editor section | Drawn by |
 |---|---|---|---|
 | Homepage text: hero, What we do and values, events section text, founders, Slack, newsletter box, footer tagline, Google and link-preview descriptions | `content/pages/home.yml` | Pages → Homepage | `index.html` (layout, with placeholders) + `scripts/site-render.mjs` |
-| Events on the homepage (cards, "Next gathering" box) | `content/events/*.yml`, one per event | Events | the events code in `index.html`'s `<script>`, which runs in the visitor's browser |
-| Headings and intros of /newsletter, /blog, /resources | `content/pages/archives.yml` | Pages → Newsletter, Blog and Resources pages | `scripts/build.mjs` + `listHero()` in `site-render.mjs` |
+| Events on the homepage (cards, "Next gathering" box) | `content/events/*.yml`, one per event | Events | the events code in `index.html`'s `<script>`. The build runs the same code once so the cards are in the HTML for search engines, and the browser redraws them on load |
+| One page per event at /events/&lt;name&gt;, and the /events list | `content/events/*.yml` (adds optional photo, recap, related link, free) | Events | `eventPage()` and `eventsPage()` in `scripts/build.mjs` |
+| /about and its questions and answers | `content/pages/about.yml` | Pages → About page | `aboutPage()` in `scripts/build.mjs` |
+| Headings and intros of /newsletter, /blog, /events, /resources | `content/pages/archives.yml` | Pages → Newsletter, Blog, Events and Resources pages | `scripts/build.mjs` + `listHero()` in `site-render.mjs` |
 | Newsletter issues and blog posts | `content/posts/*.md` (file name = web address) | Newsletter, Blog | `scripts/build.mjs` + `scripts/posts.css` |
-| Resource cards at /resources | `content/resources/*.md` (front matter only); files in `/resources` | Resources | `resourceCard()` in `site-render.mjs` |
+| Resource cards at /resources | `content/resources/*.md` front matter; files in `/resources` | Resources | `resourceCard()` in `site-render.mjs` |
+| One page per resource at /resources/&lt;name&gt; | the same file; its body (Summary page) is the page text | Resources | `resourcePage()` in `scripts/build.mjs` |
 | Pictures in posts | `assets/posts/` | uploaded in the editor | |
 | Founder photos | `assets/founders/` | uploaded in Pages → Homepage | |
 
@@ -115,6 +118,19 @@ These live in `admin/config.yml`:
 - Vercel builds every pull request, and `draft: true` posts show only on those previews. The editor finds the preview link through GitHub's deployment status.
 - For a simpler flow with no review stages, change it to `publish_mode: preview`: saves still go to a pull request with a preview, without the stage board.
 
+## Search engines and AI tools (SEO and AEO)
+
+The build gives every page what search engines and AI answer tools look for. Nothing here needs editing by hand; it all comes from the content files.
+
+- **Titles and descriptions:** the homepage's come from Pages → Homepage → Search and sharing (`seo.title`, `seo.description`). Other pages use their own title and summary.
+- **Canonical link and Open Graph / X tags** on every page, with absolute image addresses so LinkedIn and Slack previews work.
+- **Structured data (schema.org JSON-LD):** Organization and WebSite on the homepage (founders from Pages → Homepage → Founders, with their LinkedIn), Event on the homepage and each event page, BlogPosting on posts, DigitalDocument on resource pages, FAQPage on /about, and BreadcrumbList on inner pages.
+- **Events in the HTML:** `prerenderEvents()` in `build.mjs` runs the events part of `index.html`'s script (from `const TZ =` to `document.getElementById("year")`, the same markers the editor preview uses) so the homepage cards are in the page for crawlers that don't run JavaScript.
+- **Event web addresses:** the file name without its date plus the year, so `2026-11-05-fall-event.yml` is `/events/fall-event-2026`. Changing a file name changes the address.
+- **Take-homes on event pages:** resources dated the same day as an event are listed on that event's page, and the resource page links back to the event.
+- **`sitemap.xml`** lists every public page with a last-changed date. **`llms.txt`** is a short guide to the site for AI tools, with the FAQ, events and resources; **`llms-full.txt`** is the whole site as one Markdown file.
+- To check: paste a page into Google's [Rich Results Test](https://search.google.com/test/rich-results) or the [Schema Markup Validator](https://validator.schema.org/).
+
 ## Keeping it out of search and analytics
 
 `/admin` has a noindex tag and an `X-Robots-Tag` header (set in `vercel.json`). It's disallowed in `robots.txt` and not in `sitemap.xml`. It also has no Mixpanel code.
@@ -131,7 +147,7 @@ admin/admin.js          preview templates + starts the editor
 admin/config.yml        collections, fields, hints, workflow
 admin/preview.css       post preview styling
 api/auth.mjs            GitHub sign-in
-content/pages/*.yml     page text
+content/pages/*.yml     page text (home, archives, about)
 content/events/*.yml    events
 content/posts/*.md      newsletter issues and blog posts
 content/resources/*.md  resources

@@ -3,7 +3,8 @@
 
    content/pages/home.yml      homepage words, links and founder photos
    content/pages/archives.yml  top of the Newsletter, Blog and Resources pages
-   content/events/*.yml        one file per gathering
+   content/pages/about.yml     the /about page and its FAQ
+   content/events/*.yml        one file per gathering (each also gets a page at /events/<slug>)
 
    See docs/CMS.md for how it all fits together. */
 
@@ -19,14 +20,28 @@ export function loadSiteContent(root) {
   const eventsDir = path.join(root, "content", "events");
   const home = readYaml(path.join(pages, "home.yml"));
   const archives = readYaml(path.join(pages, "archives.yml"));
+  const aboutFile = path.join(pages, "about.yml");
+  const about = fs.existsSync(aboutFile) ? readYaml(aboutFile) : null;
   const events = fs.existsSync(eventsDir)
     ? fs.readdirSync(eventsDir).filter(f => /\.ya?ml$/.test(f)).sort().map(f => {
         const e = readYaml(path.join(eventsDir, f));
         for (const k of ["title", "start", "venue", "luma"]) if (!e[k]) throw new Error(`content/events/${f}: add a ${k}`);
-        return e;
+        return { ...e, slug: eventSlug(f, e) };
       })
     : [];
-  return { home, archives, events };
+  const seen = new Set();
+  for (const e of events) { if (seen.has(e.slug)) throw new Error(`content/events: two events would both be at /events/${e.slug}; rename one file`); seen.add(e.slug); }
+  return { home, archives, about, events };
+}
+
+/* The web address of an event page: the file name without its date, plus the year,
+   so 2026-11-05-fall-event.yml is at /events/fall-event-2026. */
+export function eventSlug(file, e) {
+  const base = file.replace(/\.ya?ml$/, "");
+  const year = (base.match(/^(\d{4})-\d{2}-\d{2}-/) || [])[1] || String(new Date(e.start).getUTCFullYear());
+  let slug = base.replace(/^\d{4}-\d{2}-\d{2}-/, "").toLowerCase().replace(/[^a-z0-9-]+/g, "-").replace(/^-+|-+$/g, "");
+  if (!/\b(19|20)\d{2}\b/.test(slug)) slug += "-" + year;
+  return slug;
 }
 
 /* ---------- photos ---------- */

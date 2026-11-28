@@ -6,10 +6,16 @@
      image, imageAlt, author, tags, updated, draft.
    draft: true posts only appear on Vercel preview links and `npm run preview`.
 
-   Output: /newsletter, /blog, one page per post, RSS feeds, sitemap.xml and llms.txt.
+   Output: /newsletter, /blog, one page per post, /events and one page per event, /resources and one
+   page per resource, /about, RSS feeds, sitemap.xml, llms.txt and llms-full.txt.
+
+   Search and AI tools: every page gets a canonical link, Open Graph tags and schema.org JSON-LD
+   (Organization, WebSite, Event, BlogPosting, DigitalDocument, FAQPage, BreadcrumbList). The homepage's
+   event cards are written into the HTML at build time, so crawlers that don't run JavaScript see them.
 
    Resources (handouts and briefs from our sessions) live in content/resources/*.md,
-   front matter only: title, kind, date, session, description, file, thumb, related, relatedLabel.
+   front matter: title, kind, date, session, description, file, thumb, related, relatedLabel, and an
+   optional Markdown body (the summary on the resource's own page at /resources/<name>).
    The files themselves go in /resources. They are listed at /resources, newest first.
    The homepage gets a "Latest" section where index.html has <!--LATEST-POSTS-->. */
 
@@ -19,7 +25,7 @@ import { fileURLToPath } from "node:url";
 import matter from "gray-matter";
 import { marked } from "marked";
 import { loadSiteContent, fillIndex } from "./site-content.mjs";
-import { listHero, resourcesList } from "./site-render.mjs";
+import { listHero, resourcesList, eventForPage } from "./site-render.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const OUT = path.join(ROOT, "dist");
@@ -125,7 +131,7 @@ function loadPosts() {
       updated: data.updated ? toDate(data.updated) : date,
       typeKey: data.type, typeInfo: type,
       url: `/${type.path}/${slug}`,
-      html, minutes: Math.max(1, Math.round(words / 220)),
+      html, source: content, minutes: Math.max(1, Math.round(words / 220)),
       authors: String(data.author || SITE_NAME).split(/\s*(?:&|,| and )\s*/).filter(Boolean),
       description: data.description || ""
     });
@@ -141,13 +147,14 @@ function loadResources() {
   if (!fs.existsSync(RESOURCES_DIR)) return [];
   const list = [];
   for (const file of fs.readdirSync(RESOURCES_DIR).filter(f => f.endsWith(".md")).sort()) {
-    const { data } = matter(fs.readFileSync(path.join(RESOURCES_DIR, file), "utf8"));
+    const { data, content } = matter(fs.readFileSync(path.join(RESOURCES_DIR, file), "utf8"));
     const where = `content/resources/${file}`;
     for (const k of ["title", "date", "file"]) if (!data[k]) throw new Error(`${where}: add a ${k}`);
     const local = path.join(ROOT, String(data.file).replace(/^\//, ""));
     if (!/^https?:/.test(data.file) && !fs.existsSync(local)) throw new Error(`${where}: file ${data.file} not found; put it in /resources`);
     if (data.draft && !SHOW_DRAFTS) continue;
-    list.push({ ...data, date: toDate(data.date), id: file.replace(/\.md$/, "").replace(/^\d{4}-\d{2}-\d{2}-/, "") });
+    const id = file.replace(/\.md$/, "").replace(/^\d{4}-\d{2}-\d{2}-/, "");
+    list.push({ ...data, date: toDate(data.date), id, url: `/resources/${id}`, body: content.trim(), html: content.trim() ? renderBody(content) : "" });
   }
   return list.sort((a, b) => b.date - a.date);
 }
@@ -166,10 +173,85 @@ const SCRIPTS = [
   'document.getElementById("year").textContent = new Date().getFullYear();'
 ].join("\n");
 
+/* ---------- structured data (schema.org JSON-LD) ---------- */
+
+const TZ = "America/Vancouver";
+const fmtLocal = (d, o) => new Intl.DateTimeFormat("en-CA", { timeZone: TZ, ...o }).format(d).replace(/\./g, "");
+const localDay = d => fmtLocal(d, { year: "numeric", month: "2-digit", day: "2-digit" });
+const plain = s => String(s ?? "").replace(/\[([^\]]+)\]\([^)]+\)/g, "$1").replace(/\*\*?([^*]+)\*\*?/g, "$1").trim();
+const ldScripts = jsonld => [].concat(jsonld || []).map(j =>
+  `<script type="application/ld+json">${JSON.stringify(j).replace(/</g, "\\u003c")}</script>\n`).join("");
+
+const ORG_ID = `${SITE}/#organization`;
+const FOUNDERS = (CONTENT.home.founders && CONTENT.home.founders.people) || [];
+const personLd = f => ({
+  "@type": "Person", "@id": `${SITE}/#${String(f.name).toLowerCase().replace(/[^a-z]+/g, "-")}`, name: f.name,
+  ...(f.role ? { jobTitle: f.role } : {}), ...(f.photo ? { image: abs(f.photo) } : {}),
+  ...(f.linkedin ? { url: f.linkedin, sameAs: [f.linkedin] } : {}), worksFor: { "@id": ORG_ID }
+});
+/* "Michael" in a post's author line is the founder Michael J Foucher. */
+const authorLd = name => {
+  const f = FOUNDERS.find(f => f.name === name || String(f.name).split(" ")[0] === name);
+  return f ? personLd(f) : { "@type": "Person", name };
+};
+const ORG_REF = { "@type": "Organization", "@id": ORG_ID, name: SITE_NAME, url: SITE + "/" };
+const PLACE_VICTORIA = { "@type": "Place", name: "Victoria, British Columbia", address: { "@type": "PostalAddress", addressLocality: "Victoria", addressRegion: "BC", addressCountry: "CA" } };
+function organizationLd() {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "@id": ORG_ID,
+    name: SITE_NAME,
+    alternateName: "ProductHub",
+    url: SITE + "/",
+    logo: { "@type": "ImageObject", url: `${SITE}/android-chrome-512.png`, width: 512, height: 512 },
+    image: `${SITE}/assets/og-image.png`,
+    description: plain(CONTENT.home.seo && CONTENT.home.seo.description),
+    email: "hello@producthub.info",
+    foundingDate: "2026",
+    foundingLocation: PLACE_VICTORIA,
+    location: PLACE_VICTORIA,
+    areaServed: [{ "@type": "City", name: "Victoria, BC" }, { "@type": "Place", name: "Vancouver Island, BC" }],
+    knowsAbout: ["Product management", "Product design", "Software development", "Software testing", "Product discovery", "AI in software products"],
+    founder: FOUNDERS.map(personLd),
+    sameAs: [CONTENT.home.events && CONTENT.home.events.lumaCalendar, "https://newsletter.producthub.info"].filter(Boolean)
+  };
+}
+const websiteLd = () => ({
+  "@context": "https://schema.org", "@type": "WebSite", "@id": `${SITE}/#website`, name: SITE_NAME, url: SITE + "/",
+  inLanguage: "en-CA", publisher: ORG_REF
+});
+function breadcrumbLd(items) {
+  return {
+    "@context": "https://schema.org", "@type": "BreadcrumbList",
+    itemListElement: [["Home", "/"], ...items].map(([name, url], i) => ({ "@type": "ListItem", position: i + 1, name, item: abs(url) }))
+  };
+}
+function eventLd(e, resources = []) {
+  const start = new Date(e.start), end = new Date(e.end || e.start);
+  return {
+    "@context": "https://schema.org",
+    "@type": "Event",
+    "@id": abs(e.url) + "#event",
+    name: e.title,
+    description: e.summary || "",
+    url: abs(e.url),
+    startDate: start.toISOString(),
+    endDate: end.toISOString(),
+    eventStatus: e.cancelled ? "https://schema.org/EventCancelled" : "https://schema.org/EventScheduled",
+    eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
+    location: { "@type": "Place", name: e.venue, address: { "@type": "PostalAddress", streetAddress: e.venue, addressLocality: "Victoria", addressRegion: "BC", addressCountry: "CA" } },
+    image: [abs(e.image || "/assets/og-image.png")],
+    organizer: { "@type": "Organization", name: SITE_NAME, url: SITE + "/" },
+    ...(e.free !== false ? { isAccessibleForFree: true, offers: { "@type": "Offer", url: e.luma, price: 0, priceCurrency: "CAD", availability: "https://schema.org/InStock" } } : { offers: { "@type": "Offer", url: e.luma } }),
+    ...(resources.length ? { subjectOf: resources.map(r => ({ "@type": "DigitalDocument", name: r.title, url: abs(r.url) })) } : {})
+  };
+}
+
 const FEEDS_HEAD = `<link rel="alternate" type="application/rss+xml" title="${SITE_NAME}: newsletter and blog" href="/feed.xml">`;
 
 function head({ title, description, url, image, imageAlt, type = "website", jsonld, noindex, published, modified }) {
-  const fullTitle = title === SITE_NAME ? title : `${title} · ${SITE_NAME}`;
+  const fullTitle = title.includes(SITE_NAME) ? title : `${title} · ${SITE_NAME}`;
   const img = abs(image || "/assets/og-image.png");
   return `<!doctype html>
 <html lang="en">
@@ -200,7 +282,7 @@ ${FEEDS_HEAD}
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Poppins:wght@400;500;600;700&display=swap">
 <style>${BASE_CSS}</style>
 <link rel="stylesheet" href="/assets/posts.css">
-${jsonld ? `<script type="application/ld+json">${JSON.stringify(jsonld).replace(/</g, "\\u003c")}</script>\n` : ""}</head>
+${ldScripts(jsonld)}</head>
 <body>
 <script>
 (function () { try { var t = localStorage.getItem("ph-theme"); if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t); } catch (e) {} })();
@@ -244,6 +326,7 @@ function footer() {
       <a href="/newsletter">Newsletter</a>
       <a href="/blog">Blog</a>
       <a href="/resources">Resources</a>
+      <a href="/about">About</a>
       <a href="/feed.xml">RSS</a>
       <button type="button" class="linkish" id="analytics-settings">Analytics</button>
     </nav>
@@ -298,14 +381,15 @@ function postPage(p, all) {
     url: pageUrl,
     mainEntityOfPage: pageUrl,
     image: abs(p.image || "/assets/og-image.png"),
-    author: p.authors.map(name => ({ "@type": "Person", name })),
-    publisher: { "@type": "Organization", name: SITE_NAME, url: SITE, logo: { "@type": "ImageObject", url: `${SITE}/android-chrome-512.png` } },
+    author: p.authors.map(authorLd),
+    publisher: { "@type": "Organization", "@id": ORG_ID, name: SITE_NAME, url: SITE, logo: { "@type": "ImageObject", url: `${SITE}/android-chrome-512.png` } },
     isPartOf: { "@type": "Blog", name: `${SITE_NAME} ${p.typeInfo.label}`, url: abs("/" + p.typeInfo.path) },
     ...(p.tags ? { keywords: [].concat(p.tags).join(", ") } : {}),
     inLanguage: "en-CA"
   };
   const share = encodeURIComponent(pageUrl);
-  return head({ title: p.title, description: p.description, url: p.url, image: p.image, imageAlt: p.imageAlt, type: "article", jsonld,
+  return head({ title: p.title, description: p.description, url: p.url, image: p.image, imageAlt: p.imageAlt, type: "article",
+      jsonld: [jsonld, breadcrumbLd([[p.typeInfo.label, "/" + p.typeInfo.path], [p.title, p.url]])],
       noindex: !!p.draft, published: p.date.toISOString(), modified: p.updated.toISOString() })
     + header(p.typeKey) + `
 <main id="top">
@@ -358,7 +442,7 @@ function listPage(typeKey, posts) {
     publisher: { "@type": "Organization", name: SITE_NAME, url: SITE },
     blogPost: posts.filter(p => !p.draft).map(p => ({ "@type": "BlogPosting", headline: p.title, url: abs(p.url), datePublished: p.date.toISOString() }))
   };
-  return head({ title: t.title, description: t.intro, url, jsonld })
+  return head({ title: t.title, description: t.intro, url, jsonld: [jsonld, breadcrumbLd([[t.label, url]])] })
     + header(typeKey) + `
 <main id="top">
 ${listHero({ label: t.label, heading: t.heading, intro: t.intro, actions: `
@@ -384,9 +468,10 @@ const RESOURCES_INTRO = pageText("resources", "intro");
 function resourcesPage(list) {
   const jsonld = {
     "@context": "https://schema.org", "@type": "CollectionPage", name: `${SITE_NAME} resources`, description: RESOURCES_INTRO, url: abs("/resources"),
-    hasPart: list.filter(r => !r.draft).map(r => ({ "@type": "DigitalDocument", name: r.title, url: abs(r.file), datePublished: r.date.toISOString() }))
+    publisher: ORG_REF,
+    hasPart: list.filter(r => !r.draft).map(r => ({ "@type": "DigitalDocument", name: r.title, url: abs(r.url), datePublished: r.date.toISOString() }))
   };
-  return head({ title: "Resources", description: RESOURCES_INTRO, url: "/resources", jsonld })
+  return head({ title: "Resources", description: RESOURCES_INTRO, url: "/resources", jsonld: [jsonld, breadcrumbLd([["Resources", "/resources"]])] })
     + header("resources") + `
 <main id="top">
 ${listHero({ label: "Resources", heading: pageText("resources", "heading"), intro: RESOURCES_INTRO })}
@@ -434,39 +519,290 @@ function rss({ title, description, url, feedUrl, posts }) {
 `;
 }
 
-function sitemap(posts) {
-  const urls = [
-    { loc: SITE + "/", lastmod: posts[0] && isoDate(posts[0].updated) },
-    { loc: abs("/resources") },
-    ...Object.values(TYPES).map(t => ({ loc: abs("/" + t.path), lastmod: (posts.find(p => p.typeInfo === t) || {}).updated })),
-    ...posts.map(p => ({ loc: abs(p.url), lastmod: p.updated }))
-  ];
+function sitemap(urls) {
   return `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${urls.map(u => `  <url><loc>${u.loc}</loc>${u.lastmod ? `<lastmod>${typeof u.lastmod === "string" ? u.lastmod : isoDate(u.lastmod)}</lastmod>` : ""}</url>`).join("\n")}
+${urls.map(u => `  <url><loc>${abs(u.loc)}</loc>${u.lastmod ? `<lastmod>${isoDate(u.lastmod)}</lastmod>` : ""}</url>`).join("\n")}
 </urlset>
 `;
 }
 
-function llms(posts) {
-  const section = t => posts.filter(p => p.typeInfo === t).map(p => `- [${p.title}](${abs(p.url)}): ${p.description}`).join("\n") || "- Nothing published yet.";
+const ABOUT_INTRO = "A small community for the people who make software products on Vancouver Island: product managers, designers, engineers, testers and everyone else in the room when something ships. Small gatherings where peers show how they really build, test and ship.";
+
+function llms({ posts, events, resources }) {
+  const list = (items, line) => items.map(line).join("\n") || "- Nothing published yet.";
+  const about = CONTENT.about;
   return `# ${SITE_NAME}
 
-> A small community for the people who make software products on Vancouver Island: product managers, designers, engineers, testers and everyone else in the room when something ships. Small gatherings where peers show how they really build, test and ship.
+> ${ABOUT_INTRO}
+
+ProductHub Victoria is based in Victoria, British Columbia, Canada, and serves Vancouver Island. It was founded in 2026 by ${FOUNDERS.map(f => f.name).join(" and ")}. Gatherings are small, free and in person; there is also a members' Slack and an email newsletter. Contact: hello@producthub.info.
 
 - [Home](${SITE}/): what we do, upcoming events, founders, Slack and newsletter sign-up
+- [About and FAQ](${SITE}/about)
+- [Events](${SITE}/events)
 - [Newsletter archive](${SITE}/newsletter)
 - [Blog](${SITE}/blog)
 - [Resources](${SITE}/resources): briefs and take-homes from our sessions
+- [Full text of this site](${SITE}/llms-full.txt)
+${about && about.faq ? `
+## Questions and answers
+
+${about.faq.map(f => `- **${plain(f.q)}** ${plain(f.a)}`).join("\n")}
+` : ""}
+## Events
+
+${list(events, e => `- [${e.title}](${abs(e.url)}): ${fmtLocal(new Date(e.start), { year: "numeric", month: "long", day: "numeric" })}, ${e.venue}, Victoria, BC. ${e.summary || ""}`.trim())}
+
+## Resources
+
+${list(resources, r => `- [${r.title}](${abs(r.url)}): ${r.description || ""}`)}
 
 ## Newsletter
 
-${section(TYPES.newsletter)}
+${list(posts.filter(p => p.typeInfo === TYPES.newsletter), p => `- [${p.title}](${abs(p.url)}): ${p.description}`)}
 
 ## Blog
 
-${section(TYPES.blog)}
+${list(posts.filter(p => p.typeInfo === TYPES.blog), p => `- [${p.title}](${abs(p.url)}): ${p.description}`)}
 `;
+}
+
+/* Everything on the site as one plain Markdown file, for AI tools that read a whole site at once. */
+function llmsFull({ posts, events, resources }) {
+  const about = CONTENT.about;
+  const parts = [`# ${SITE_NAME}: full text\n\n> ${ABOUT_INTRO}\n\nSource: ${SITE}/. Generated from the site's content files on every deploy.`];
+  if (about) {
+    parts.push(`## About\n\nURL: ${SITE}/about\n\n${plain(about.intro)}\n\n${(about.sections || []).map(x => `### ${x.heading}\n\n${plain(x.text)}`).join("\n\n")}`);
+    if (about.faq) parts.push(`## Questions and answers\n\n${about.faq.map(f => `### ${plain(f.q)}\n\n${plain(f.a)}`).join("\n\n")}`);
+  }
+  parts.push(`## Founders\n\n${FOUNDERS.map(f => `### ${f.name}, ${f.role}\n\n${plain(f.bio)}${f.linkedin ? `\n\nLinkedIn: ${f.linkedin}` : ""}`).join("\n\n")}`);
+  parts.push(`## Events\n\n${events.map(e => {
+    const s = new Date(e.start);
+    return `### ${e.title}\n\nURL: ${abs(e.url)}\nWhen: ${fmtLocal(s, { weekday: "long", year: "numeric", month: "long", day: "numeric" })}, ${fmtLocal(s, { hour: "numeric", minute: "2-digit" })} (Pacific time)\nWhere: ${e.venue}, Victoria, BC\nRSVP: ${e.luma}\n\n${e.summary || ""}${(e.agenda || []).length ? `\n\nAgenda:\n${e.agenda.map(a => `- ${a.time}: ${a.item}`).join("\n")}` : ""}${e.recap ? `\n\n${e.recap.trim()}` : ""}`;
+  }).join("\n\n") || "No events yet."}`);
+  parts.push(`## Resources\n\n${resources.map(r => `### ${r.title}\n\nURL: ${abs(r.url)}\nDownload: ${abs(r.file)}\n${r.session ? `From: ${r.session}\n` : ""}\n${r.description || ""}${r.body ? `\n\n${r.body.replace(/^## /gm, "#### ")}` : ""}`).join("\n\n") || "No resources yet."}`);
+  parts.push(`## Newsletter and blog\n\n${posts.map(p => `### ${p.title}\n\nURL: ${abs(p.url)}\nPublished: ${isoDate(p.date)} · ${p.typeInfo.label}${p.authors ? ` · By ${p.authors.join(" & ")}` : ""}\n\n${(p.source || "").replace(/^## /gm, "#### ").replace(/<[^>]+>/g, "").trim()}`).join("\n\n") || "No posts yet."}`);
+  return parts.join("\n\n") + "\n";
+}
+
+/* ---------- events ---------- */
+
+const EVENTS_TEXT = key => pageText("events", key);
+const whenLong = d => fmtLocal(d, { weekday: "long", month: "long", day: "numeric", year: "numeric" });
+const timeOf = d => fmtLocal(d, { hour: "numeric", minute: "2-digit" });
+
+function eventRow(e) {
+  const s = new Date(e.start), ended = new Date(e.end || e.start) < new Date();
+  return `<a class="post-row" href="${e.url}">
+      <div class="date" aria-hidden="true"><div class="m">${fmtLocal(s, { month: "short" })}</div><div class="d">${fmtLocal(s, { day: "numeric" })}</div><div class="y">${fmtLocal(s, { year: "numeric" })}</div></div>
+      <div class="body">
+        <span class="kind">${ended ? "Past gathering" : "Upcoming gathering"}</span>
+        <h3>${esc(e.title)}</h3>
+        ${e.summary ? `<p class="summary">${esc(e.summary)}</p>` : ""}
+        <p class="meta">${esc(whenLong(s))} · ${esc(e.venue)}, Victoria</p>
+      </div>
+      <span class="go" aria-hidden="true">→</span>
+    </a>`;
+}
+
+function eventsPage(events) {
+  const sorted = [...events].sort((a, b) => new Date(b.start) - new Date(a.start));
+  const jsonld = {
+    "@context": "https://schema.org", "@type": "CollectionPage", name: `${SITE_NAME} events`, description: EVENTS_TEXT("intro"), url: abs("/events"),
+    publisher: ORG_REF,
+    mainEntity: { "@type": "ItemList", itemListElement: sorted.map((e, i) => ({ "@type": "ListItem", position: i + 1, url: abs(e.url), name: e.title })) }
+  };
+  return head({ title: EVENTS_TEXT("title"), description: EVENTS_TEXT("intro"), url: "/events", jsonld: [jsonld, breadcrumbLd([["Events", "/events"]])] })
+    + header("events") + `
+<main id="top">
+${listHero({ label: "Events", heading: EVENTS_TEXT("heading"), intro: EVENTS_TEXT("intro"), actions: `
+      <div class="actions">
+        <a class="btn btn-coral" href="${esc(CONTENT.home.events.lumaCalendar)}" target="_blank" rel="noopener">Follow on Luma ↗</a>
+        <a class="btn btn-ghost" href="#newsletter">Hear about the next one</a>
+      </div>` })}
+  <section class="band list-band" aria-label="Events">
+    <div class="wrap narrow">
+      <div class="post-list">
+    ${sorted.length ? sorted.map(eventRow).join("\n    ") : `<div class="empty">${esc(EVENTS_TEXT("empty"))}</div>`}
+      </div>
+    </div>
+  </section>
+
+  ${NEWSLETTER_SECTION}
+</main>` + footer();
+}
+
+function eventPage(e, resources) {
+  const s = new Date(e.start), end = new Date(e.end || e.start);
+  const ended = end < new Date();
+  const takeHomes = resources.filter(r => isoDate(r.date) === localDay(s) || (r.event && r.event === e.slug));
+  const recapHtml = e.recap ? renderBody(String(e.recap)) : "";
+  const share = encodeURIComponent(abs(e.url));
+  return head({ title: e.title, description: e.summary || `${e.title}, a ProductHub Victoria gathering in Victoria, BC.`, url: e.url, image: e.image, imageAlt: e.imageAlt,
+      jsonld: [eventLd(e, takeHomes), breadcrumbLd([["Events", "/events"], [e.title, e.url]])] })
+    + header("events") + `
+<main id="top">
+  <article class="post event-page">
+    <header class="post-hero">
+      <div class="wrap narrow">
+        <a class="crumb" href="/events">← All events</a>
+        <span class="eyebrow"><span data-ended-text="Past gathering" data-ends="${end.toISOString()}">${ended ? "Past gathering" : "Upcoming gathering"}</span> · <time datetime="${s.toISOString()}">${esc(fmtLocal(s, { month: "long", day: "numeric", year: "numeric" }))}</time></span>
+        <h1>${esc(e.title)}</h1>
+        ${e.summary ? `<p class="lede">${esc(e.summary)}</p>` : ""}
+        <p class="byline">${esc(whenLong(s))} · ${esc(timeOf(s))}${e.end ? "–" + esc(timeOf(end)) : ""} · ${esc(e.venue)}, Victoria, BC</p>
+        <div class="actions">
+          <a class="btn btn-coral" href="${esc(e.luma)}" target="_blank" rel="noopener"><span data-ended-text="See it on Luma" data-ends="${end.toISOString()}">${ended ? "See it on Luma" : "RSVP on Luma"}</span> <span class="arrow" aria-hidden="true">↗</span></a>
+          ${e.related ? `<a class="btn btn-ghost" href="${esc(e.related)}">${esc(e.relatedLabel || "Read the recap")} →</a>` : ""}
+        </div>
+      </div>
+    </header>
+    <div class="wrap narrow">
+      <div class="prose">
+        ${e.image ? `<figure><img src="${esc(e.image)}" alt="${esc(e.imageAlt || "")}" loading="lazy"></figure>` : ""}
+        <h2>Details</h2>
+        <ul class="event-facts">
+          <li><b>When</b> ${esc(whenLong(s))}, ${esc(timeOf(s))}${e.end ? " to " + esc(timeOf(end)) : ""} (Pacific time)</li>
+          <li><b>Where</b> ${esc(e.venue)}, Victoria, BC</li>
+          ${e.free !== false ? `<li><b>Cost</b> Free.${ended ? "" : " RSVP on Luma so we can plan food and seats."}</li>` : ""}
+          <li><b>Hosts</b> ${esc(FOUNDERS.map(f => f.name).join(" and ") || SITE_NAME)}</li>
+        </ul>
+        ${(e.agenda || []).length ? `<h2>Agenda</h2>
+        <ul class="event-agenda">
+          ${e.agenda.map(a => `<li><time>${esc(a.time)}</time> <span>${esc(a.item)}</span></li>`).join("\n          ")}
+        </ul>` : ""}
+        ${recapHtml ? `<h2>Recap</h2>\n${recapHtml}` : ""}
+        ${takeHomes.length ? `<h2>Take-homes from this session</h2>
+        <ul>
+          ${takeHomes.map(r => `<li><a href="${esc(r.url)}">${esc(r.title)}</a>${r.description ? `: ${esc(r.description)}` : ""}</li>`).join("\n          ")}
+        </ul>` : ""}
+      </div>
+      <div class="post-foot">
+        <span>Share</span>
+        <a href="https://www.linkedin.com/sharing/share-offsite/?url=${share}" target="_blank" rel="noopener">LinkedIn ↗</a>
+        <a href="mailto:?subject=${encodeURIComponent(e.title)}&amp;body=${share}">Email ↗</a>
+        <a href="/events">All events →</a>
+      </div>
+    </div>
+  </article>
+
+  ${NEWSLETTER_SECTION}
+</main>
+<script>
+document.querySelectorAll("[data-ends]").forEach(function (el) { if (new Date(el.dataset.ends) < new Date()) el.textContent = el.dataset.endedText; });
+</script>` + footer();
+}
+
+/* ---------- resource pages ---------- */
+
+function resourcePage(r, events) {
+  const ext = (String(r.file).split(".").pop() || "").toUpperCase();
+  const fromEvent = events.find(e => localDay(new Date(e.start)) === isoDate(r.date) || r.event === e.slug);
+  const jsonld = {
+    "@context": "https://schema.org",
+    "@type": "DigitalDocument",
+    name: r.title,
+    headline: r.title,
+    description: r.description || "",
+    url: abs(r.url),
+    datePublished: r.date.toISOString(),
+    inLanguage: "en-CA",
+    author: ORG_REF,
+    publisher: ORG_REF,
+    ...(r.thumb ? { image: abs(r.thumb), thumbnailUrl: abs(r.thumb) } : {}),
+    encoding: { "@type": "MediaObject", contentUrl: abs(r.file), encodingFormat: ext === "PDF" ? "application/pdf" : undefined },
+    ...(fromEvent ? { about: { "@type": "Event", name: fromEvent.title, url: abs(fromEvent.url) } } : {})
+  };
+  return head({ title: r.title, description: r.description || r.title, url: r.url, image: r.thumb, imageAlt: r.thumb ? `First page of ${r.title}` : "", type: "article",
+      jsonld: [jsonld, breadcrumbLd([["Resources", "/resources"], [r.title, r.url]])], noindex: !!r.draft })
+    + header("resources") + `
+<main id="top">
+  <article class="post resource-page">
+    <header class="post-hero">
+      <div class="wrap narrow">
+        <a class="crumb" href="/resources">← All resources</a>
+        <span class="eyebrow">${esc(r.kind || "Resource")}${r.session ? " · " + esc(r.session) : ""} · <time datetime="${isoDate(r.date)}">${fmtDate(r.date)}</time></span>
+        <h1>${esc(r.title)}</h1>
+        ${r.description ? `<p class="lede">${esc(r.description)}</p>` : ""}
+        <div class="actions">
+          <a class="btn btn-coral" href="${esc(r.file)}" target="_blank" rel="noopener">Download${ext ? " " + esc(ext) : ""}</a>
+          ${r.related ? `<a class="btn btn-ghost" href="${esc(r.related)}">${esc(r.relatedLabel || "Read more")} →</a>` : ""}
+        </div>
+      </div>
+    </header>
+    <div class="wrap narrow">
+      <div class="prose">
+        ${r.thumb ? `<figure class="res-figure"><a href="${esc(r.file)}" target="_blank" rel="noopener"><img src="${esc(r.thumb)}" alt="First page of ${esc(r.title)}" loading="lazy"></a></figure>` : ""}
+${r.html || ""}
+        ${fromEvent ? `<p>This came out of <a href="${esc(fromEvent.url)}">${esc(fromEvent.title)}</a>, a ProductHub Victoria gathering on ${esc(fmtLocal(new Date(fromEvent.start), { month: "long", day: "numeric", year: "numeric" }))}.</p>` : ""}
+      </div>
+      <div class="post-foot">
+        <span>Share</span>
+        <a href="https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(abs(r.url))}" target="_blank" rel="noopener">LinkedIn ↗</a>
+        <a href="${esc(r.file)}" target="_blank" rel="noopener">Download${ext ? " " + esc(ext) : ""} ↗</a>
+        <a href="/resources">All resources →</a>
+      </div>
+    </div>
+  </article>
+
+  ${NEWSLETTER_SECTION}
+</main>` + footer();
+}
+
+/* ---------- about ---------- */
+
+function aboutPage(a) {
+  const md = t => marked.parse(String(t ?? ""));
+  const faq = a.faq || [];
+  const jsonld = [
+    { "@context": "https://schema.org", "@type": "AboutPage", name: a.title, description: a.description, url: abs("/about"), mainEntity: ORG_REF, inLanguage: "en-CA" },
+    ...(faq.length ? [{ "@context": "https://schema.org", "@type": "FAQPage", mainEntity: faq.map(f => ({ "@type": "Question", name: plain(f.q), acceptedAnswer: { "@type": "Answer", text: plain(f.a) } })) }] : []),
+    breadcrumbLd([["About", "/about"]])
+  ];
+  return head({ title: a.title, description: a.description || a.intro, url: "/about", jsonld })
+    + header("about") + `
+<main id="top">
+${listHero({ label: "About", heading: a.heading, intro: a.intro })}
+  <section class="band list-band" aria-label="About ProductHub Victoria">
+    <div class="wrap narrow">
+      <div class="prose">
+${(a.sections || []).map(x => `        <h2>${esc(x.heading)}</h2>\n${md(x.text)}`).join("\n")}
+${faq.length ? `        <h2 id="faq">Questions and answers</h2>
+        <div class="faq">
+${faq.map(f => `          <h3>${esc(f.q)}</h3>\n${md(f.a)}`).join("\n")}
+        </div>` : ""}
+      </div>
+    </div>
+  </section>
+
+  ${NEWSLETTER_SECTION}
+</main>` + footer();
+}
+
+/* ---------- homepage: events in the HTML, plus structured data ---------- */
+
+/* Runs the events part of index.html's own script (the same code browsers and the editor preview
+   run) against a stand-in document, so the cards and the "Next gathering" box are in the HTML
+   that search engines and AI crawlers read. Browsers redraw them on load with the current time. */
+function prerenderEvents(html, events) {
+  const start = html.indexOf("const TZ =");
+  const end = html.indexOf('document.getElementById("year")', start);
+  if (start < 0 || end < 0) throw new Error('build: couldn\'t find the events code in index.html (from "const TZ =" to document.getElementById("year")).');
+  const els = {};
+  const document = { getElementById: id => els[id] || (els[id] = { innerHTML: "", classes: [], classList: { add: c => els[id].classes.push(c) } }) };
+  new Function("EVENTS", "document", html.slice(start, end))(events.map(eventForPage), document);
+  const fill = (tag, id) => {
+    const el = els[id];
+    if (!el || !html.includes(tag)) throw new Error(`build: couldn't find ${tag} in index.html`);
+    const cut = tag.indexOf("></") + 1;
+    let open = tag.slice(0, cut);
+    if (el.classes.length) open = open.replace(/class="([^"]*)"/, (m, c) => `class="${c} ${el.classes.join(" ")}"`);
+    html = html.replace(tag, open + el.innerHTML + tag.slice(cut));
+  };
+  fill('<aside class="next" id="next-event" aria-label="Next event"></aside>', "next-event");
+  fill('<div class="events-grid" id="upcoming"></div>', "upcoming");
+  fill('<div class="events-grid" id="past"></div>', "past");
+  return html;
 }
 
 /* ---------- build ---------- */
@@ -489,10 +825,32 @@ for (const key of Object.keys(TYPES)) {
   write(`${TYPES[key].path}/feed.xml`, rss({ title: `${SITE_NAME} ${TYPES[key].label}`, description: TYPES[key].intro, url: "/" + TYPES[key].path, feedUrl: `/${TYPES[key].path}/feed.xml`, posts: list.filter(p => !p.draft) }));
 }
 const resources = loadResources();
+const events = CONTENT.events.map(e => ({ ...e, url: `/events/${e.slug}` }));
 write("resources/index.html", resourcesPage(resources));
+for (const r of resources) write(`resources/${r.id}.html`, resourcePage(r, events));
+write("events/index.html", eventsPage(events));
+for (const e of events) write(`events/${e.slug}.html`, eventPage(e, resources));
+if (CONTENT.about) write("about.html", aboutPage(CONTENT.about));
 write("feed.xml", rss({ title: SITE_NAME, description: "The ProductHub Victoria newsletter and blog.", url: "/", feedUrl: "/feed.xml", posts: live }));
-write("sitemap.xml", sitemap(live));
-write("llms.txt", llms(live));
+
+/* lastmod: the newest date among the things on each page, never later than today. */
+const today = new Date();
+const newest = (...dates) => { const d = dates.flat().filter(x => x && !isNaN(x) && x <= today).sort((a, b) => b - a)[0]; return d || today; };
+const eventDate = e => new Date(e.updated || e.start);
+const liveResources = resources.filter(r => !r.draft);
+const homeLastmod = newest(live.map(p => p.updated), events.map(eventDate), liveResources.map(r => r.date));
+write("sitemap.xml", sitemap([
+  { loc: "/", lastmod: homeLastmod },
+  { loc: "/about", lastmod: homeLastmod },
+  { loc: "/events", lastmod: newest(events.map(eventDate)) },
+  ...events.map(e => ({ loc: e.url, lastmod: newest(eventDate(e)) })),
+  { loc: "/resources", lastmod: newest(liveResources.map(r => r.date)) },
+  ...liveResources.map(r => ({ loc: r.url, lastmod: newest(r.updated ? toDate(r.updated) : r.date) })),
+  ...Object.values(TYPES).map(t => ({ loc: "/" + t.path, lastmod: newest(live.filter(p => p.typeInfo === t).map(p => p.updated)) })),
+  ...live.map(p => ({ loc: p.url, lastmod: p.updated }))
+].filter(u => u.loc !== "/about" || CONTENT.about)));
+write("llms.txt", llms({ posts: live, events, resources: liveResources }));
+write("llms-full.txt", llmsFull({ posts: live, events, resources: liveResources }));
 
 /* Editor previews (admin/admin.js): the same renderer, stylesheet and template the site uses,
    plus the current text and events, so the preview pane matches the live pages. */
@@ -506,9 +864,11 @@ export const ARCHIVES = ${JSON.stringify(ARCHIVES)};
 `);
 
 /* Homepage: add the latest posts, the stylesheet they need, and the feed link. */
-let home = indexHtml.replace("<!--LATEST-POSTS-->", latestSection(posts))
-  .replace("</head>", `<link rel="stylesheet" href="/assets/posts.css">\n${FEEDS_HEAD}\n</head>`);
+let home = prerenderEvents(indexHtml, events).replace("<!--LATEST-POSTS-->", latestSection(posts))
+  .replace("</head>", `<link rel="stylesheet" href="/assets/posts.css">\n${FEEDS_HEAD}\n${ldScripts([
+    { ...organizationLd() }, websiteLd(), ...events.map(e => eventLd(e, liveResources.filter(r => isoDate(r.date) === localDay(new Date(e.start)))))
+  ])}</head>`);
 write("index.html", home);
 
-console.log(`Built ${resources.length} resource(s) at /resources`);
+console.log(`Built ${resources.length} resource(s) at /resources, ${events.length} event page(s) at /events${CONTENT.about ? ", /about" : ""}`);
 console.log(`Built ${posts.length} post(s)${SHOW_DRAFTS ? " (drafts included)" : ""}: ${posts.map(p => p.url + (p.draft ? " [draft]" : "")).join(", ") || "none"}`);

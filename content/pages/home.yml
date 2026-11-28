@@ -1,6 +1,7 @@
 # Homepage text. Edit in the web editor at producthub.info/admin (Pages → Homepage).
 # Layout and styling live in index.html; this file only holds the words, links and photos.
 seo:
+  title: ProductHub Victoria · Product community on Vancouver Island
   description: A small room for the people who make software products on Vancouver Island. Small gatherings where peers show how they really build, test and ship.
   shareDescription: A small room for the people who make software products on Vancouver Island.
 hero:

@@ -1,0 +1,31 @@
+# The /about page and its questions and answers. Edit in the web editor at producthub.info/admin (Pages → About).
+# Answers show on the page and are also given to Google and AI search tools as an FAQ, so keep each one
+# a direct answer in its first sentence.
+title: About ProductHub Victoria
+description: ProductHub Victoria is a free, small-group community for the people who build software products in Victoria, BC and across Vancouver Island. Who it's for, how it works and how to join.
+heading: A small room for the people who ship software on Vancouver Island.
+intro: ProductHub Victoria is a community for product managers, designers, engineers, testers and everyone else in the room when software ships. We meet in Victoria, BC, in small groups, to show each other how the work really gets done.
+sections:
+  - heading: What we do
+    text: "We run small gatherings a few times a year, usually in downtown Victoria. Each one has a short talk or demo from someone doing the work, real questions from the room, and time to talk. Every gathering leaves something the group keeps: a brief, a template or a lesson, which we post on our [Resources](/resources) page."
+  - heading: Who it's for
+    text: "Anyone who helps make software products on Vancouver Island: product managers and owners, designers and researchers, engineers, testers, support and customer success, and the leaders who hire them. Guests from elsewhere are welcome when they come to share how they work, not to sell."
+  - heading: Who runs it
+    text: "ProductHub Victoria was founded by Michael J Foucher and Danijel Coric, who host every gathering. You can reach them at [hello@producthub.info](mailto:hello@producthub.info)."
+faq:
+  - q: What is ProductHub Victoria?
+    a: "ProductHub Victoria is a small community for people who build software products in Victoria, BC and on Vancouver Island. We hold small in-person gatherings where peers show how they really build, test and ship, plus a members' Slack and a newsletter."
+  - q: Who can join?
+    a: "Anyone who works on software products on Vancouver Island: product managers, designers, engineers, testers, support and everyone else involved when something ships. You don't need a product title. Recruiters and vendors looking to pitch aren't a fit."
+  - q: Does it cost anything?
+    a: "No. Our gatherings have been free so far, and the newsletter and Slack are free too. Each event's Luma page shows the details."
+  - q: When and where are the events?
+    a: "We meet in small groups every season, so a few times a year, usually on a weekday evening in downtown Victoria. Upcoming dates are on our [homepage](/#events) and our [Luma calendar](https://luma.com/blafreb6). Newsletter subscribers hear first."
+  - q: How do I join the Slack?
+    a: "Request an invite with the [form on our homepage](/#slack). A host reviews every request, usually within a few days, and Slack emails you the invite."
+  - q: How do I get the newsletter?
+    a: "Sign up with your email at the bottom of any page. It's a short, curated email about what Island product makers are reading, using and arguing about, plus upcoming gatherings. Past issues are in the [newsletter archive](/newsletter)."
+  - q: Can I speak or show my work at a gathering?
+    a: "Yes, if you'll show how you actually work, messy parts included. We don't take vendor pitches or sponsored talks. Email [hello@producthub.info](mailto:hello@producthub.info) with what you'd like to share."
+  - q: Is ProductHub Victoria only for Victoria?
+    a: "Our members are on Vancouver Island, and most gatherings are in Victoria. People from Nanaimo, the Comox Valley and elsewhere on the Island are very welcome, and guests from off-Island can join when they come to share."

@@ -74,7 +74,8 @@ export const eventForPage = e => ({
   venue: e.venue,
   summary: e.summary || "",
   agenda: (e.agenda || []).length ? e.agenda.map(a => [String(a.time ?? ""), String(a.item ?? "")]) : undefined,
-  luma: e.luma
+  luma: e.luma,
+  url: e.slug ? `/events/${e.slug}` : undefined
 });
 
 /* photoSize(path) -> { w, h } for the founder img tags; photoUrl(path) -> the src to use
@@ -132,11 +133,12 @@ export function resourceCard(r) {
       ${r.thumb ? `<a class="res-thumb" href="${esc(r.file)}" target="_blank" rel="noopener" aria-hidden="true" tabindex="-1"><img src="${esc(r.thumbUrl || r.thumb)}" alt="" loading="lazy"></a>` : ""}
       <div class="res-body">
         <span class="kind">${esc(r.kind || "Resource")}${r.draft ? ' <b class="draft-tag">Draft</b>' : ""}</span>
-        <h3>${esc(r.title)}</h3>
+        <h3>${r.url ? `<a href="${esc(r.url)}">${esc(r.title)}</a>` : esc(r.title)}</h3>
         <p class="meta">${r.session ? esc(r.session) + " · " : ""}${isNaN(date) ? "" : fmtDate(date)}</p>
         ${r.description ? `<p class="summary">${esc(r.description)}</p>` : ""}
         <div class="res-actions">
           <a class="btn btn-coral" href="${esc(r.file)}" target="_blank" rel="noopener">Download${ext ? " " + esc(ext) : ""}</a>
+          ${r.url ? `<a class="res-related" href="${esc(r.url)}">Read the summary →</a>` : ""}
           ${r.related ? `<a class="res-related" href="${esc(r.related)}">${esc(r.relatedLabel || "Read more")} →</a>` : ""}
         </div>
       </div>
