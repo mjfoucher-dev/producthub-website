@@ -83,7 +83,9 @@ marked.use({
 function renderBody(md) {
   let html = marked.parse(md);
   html = html.replace(/<p>\s*(<figure>[\s\S]*?<\/figure>)\s*<\/p>/g, "$1");
-  /* A last line starting with an em dash inside a quote is its attribution. */
+  /* A last line starting with an em dash inside a quote is its attribution. The web editor writes it
+     as a line break inside the quote's last paragraph, so split that line off first. */
+  html = html.replace(/(?:\n|<br>\s*)((?:—|&mdash;)(?:(?!<\/?p>|\n)[\s\S])*)<\/p>\s*<\/blockquote>/g, "</p>\n<p>$1</p>\n</blockquote>");
   html = html.replace(/<p>(?:—|&mdash;)\s*([\s\S]*?)<\/p>\s*<\/blockquote>/g, '<p class="by">$1</p>\n</blockquote>');
   /* The first quote in a run is the featured (navy) one. */
   html = html.replace(/(^|<\/(?:p|ul|ol|h\d|figure)>\s*)<blockquote>/g, '$1<blockquote class="featured">');

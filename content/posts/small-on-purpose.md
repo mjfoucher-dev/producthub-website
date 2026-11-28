@@ -2,7 +2,6 @@
 title: Why we keep ProductHub Victoria small
 type: blog
 date: 2026-11-25
-slug: small-on-purpose
 description: "Twenty people who know each other's work beat two hundred who don't. Why ProductHub Victoria stays small, and what that rules out."
 author: Michael Foucher
 tags: [community, values]

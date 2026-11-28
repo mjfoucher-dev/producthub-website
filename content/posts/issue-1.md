@@ -3,7 +3,6 @@ title: Hello from ProductHub Victoria
 type: newsletter
 issue: 1
 date: 2026-11-25
-slug: issue-1
 description: "Issue #1: what fifteen Island product makers told us after the Fall Event, in their own words, plus a few ideas we're chewing on for the new year."
 image: /assets/email/fall-event-2026.jpg
 imageAlt: ProductHub Victoria Fall Event attendees standing together in a brick-walled room

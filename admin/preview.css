@@ -1,0 +1,70 @@
+/* Preview pane of the editor at /admin: made to look like a post page on producthub.info
+   (dark theme, Poppins, the article styles from scripts/posts.css). The CMS renders each field as
+   <section data-key-path="field-name"> inside an iframe; field names are in admin/config.yml. */
+@import url("https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Poppins:wght@400;500;600;700&display=swap");
+
+:root {
+  --ground: #06111F; --navy: #0B1F3A; --surface: #0B1F3A;
+  --ink: #EEF3F8; --ink-soft: #A9B6C6; --ink-faint: #6F8098;
+  --line: rgba(191, 245, 236, 0.12); --line-strong: rgba(191, 245, 236, 0.24);
+  --ocean: #1B6CA8; --seaglass: #5FD1C6; --coral: #FF7A59; --coral-text: #FF7A59; --accent-text: #5FD1C6;
+  --gradient: linear-gradient(45deg, var(--ocean), var(--seaglass));
+  --font: "Poppins", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  color-scheme: dark;
+}
+html, body { background: var(--ground); }
+body { margin: 0; color: var(--ink); font-family: var(--font); font-size: 1rem; line-height: 1.65; -webkit-font-smoothing: antialiased; }
+body { display: flex; flex-direction: column; align-items: flex-start; box-sizing: border-box; max-width: 780px; margin: 0 auto; padding: 40px 28px 64px; }
+body > div { width: 100%; }
+body > [data-lazy-key-path="issue"] { order: -1; }
+section { padding: 0; cursor: pointer; overflow: hidden; }
+section > * { max-width: 68ch; }
+section h4 { margin: 0 0 6px; font: 500 0.7rem/1.2 var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-faint); }
+section p { margin: 0; }
+
+/* Fields that only matter behind the scenes */
+section[data-key-path="type"], section[data-key-path="imageAlt"], section[data-key-path="tags"] { display: none; }
+
+/* Header: issue number, title, summary, byline, like the post hero */
+section:is([data-key-path="issue"], [data-key-path="title"], [data-key-path="description"], [data-key-path="body"],
+  [data-key-path="author"], [data-key-path="date"]) > h4 { display: none; }
+section[data-key-path="image"]:not(:has(img)) { display: none; }
+section[data-key-path="issue"] { font: 500 0.8125rem/1 var(--mono); letter-spacing: .12em; text-transform: uppercase; color: var(--ink-soft); }
+section[data-key-path="issue"] > *::before { content: "Issue #"; }
+section[data-key-path="title"] { margin-top: 18px; font-size: clamp(2rem, 5vw, 3rem); font-weight: 700; letter-spacing: -0.035em; line-height: 1.05; color: var(--ink); }
+section[data-key-path="description"] { margin-top: 20px; font-size: 1.2rem; line-height: 1.55; color: var(--ink-soft); max-width: 46ch; }
+body > [data-lazy-key-path="author"], body > [data-lazy-key-path="date"] { width: auto; }
+section[data-key-path="author"], section[data-key-path="date"] { margin-top: 22px; font: 400 0.85rem/1.4 var(--mono); color: var(--ink-faint); letter-spacing: .03em; }
+section[data-key-path="image"] { margin-top: 28px; }
+section[data-key-path="image"] img { max-width: 260px; height: auto; border: 1px solid var(--line-strong); }
+
+/* Article text, as in .prose on the site */
+section[data-key-path="body"] { margin-top: 40px; padding-top: 40px; border-top: 3px solid transparent; border-image: var(--gradient) 1; border-image-slice: 1 0 0 0;
+  font-size: 1.08rem; line-height: 1.75; color: var(--ink-soft); }
+section[data-key-path="body"] > * > * + * { margin-top: 1.15em; }
+section[data-key-path="body"] [data-rich-text-preview] :is(h1, h2, h3, h4, h5, h6) { display: block; font-family: var(--font); text-transform: none; letter-spacing: -0.02em; color: var(--ink); line-height: 1.25; }
+section[data-key-path="body"] h2 { font-size: 1.55rem; font-weight: 700; margin: 2.1em 0 0; padding-top: 0.9em; border-top: 1px solid var(--line); }
+section[data-key-path="body"] h3 { font-size: 1.2rem; font-weight: 500; margin: 1.8em 0 0; }
+section[data-key-path="body"] :is(h2, h3) + * { margin-top: 0.8em; }
+section[data-key-path="body"] p { margin: 0; }
+section[data-key-path="body"] * + p { margin-top: 1.15em; }
+section[data-key-path="body"] strong { color: var(--ink); font-weight: 600; }
+section[data-key-path="body"] em { color: var(--ink); }
+section[data-key-path="body"] a { color: var(--accent-text); }
+section[data-key-path="body"] :is(ul, ol) { padding-left: 1.25em; margin: 1.15em 0 0; }
+section[data-key-path="body"] li + li { margin-top: 0.7em; }
+section[data-key-path="body"] li::marker { color: var(--coral-text); }
+section[data-key-path="body"] figure { margin: 2em 0 0; }
+section[data-key-path="body"] img { display: block; width: 100%; height: auto; border: 1px solid var(--line-strong); }
+section[data-key-path="body"] figcaption { margin-top: 12px; font: 400 0.82rem/1.5 var(--mono); color: var(--ink-faint); letter-spacing: .02em; }
+section[data-key-path="body"] hr { border: 0; border-top: 1px solid var(--line-strong); margin: 2.5em 0; }
+section[data-key-path="body"] code { font-family: var(--mono); font-size: 0.9em; background: var(--surface); border: 1px solid var(--line); padding: 0.1em 0.35em; }
+section[data-key-path="body"] blockquote { margin: 1.4em 0 0; padding: 22px 26px; background: var(--surface); border: 1px solid var(--line-strong); border-left: 3px solid var(--seaglass); color: var(--ink); font-size: 1.05rem; line-height: 1.6; font-weight: 500; }
+section[data-key-path="body"] blockquote + blockquote { margin-top: 12px; }
+section[data-key-path="body"] blockquote p + p { margin-top: 0.8em; }
+/* The first quote in a run is the featured navy card on the site */
+section[data-key-path="body"] :not(blockquote) + blockquote, section[data-key-path="body"] blockquote:first-child {
+  background: #0B1F3A; color: #FFFFFF; border: 0; border-bottom: 3px solid var(--seaglass); padding: 30px 30px 26px; font-size: 1.35rem; line-height: 1.45; font-weight: 600; letter-spacing: -0.01em; }
+section[data-key-path="body"] :not(blockquote) + blockquote::before, section[data-key-path="body"] blockquote:first-child::before {
+  content: "\201C"; display: block; font: 700 4rem/0.6 Georgia, "Times New Roman", serif; color: #5FD1C6; height: 0.5em; margin-bottom: 10px; }
